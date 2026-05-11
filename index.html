@@ -4,115 +4,307 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Karate-Do Gojukai | Tidore Kepulauan</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; transition: background 0.2s, color 0.2s; }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #1e293b; padding: 24px 20px; }
-        body.dark { background: #0f172a; color: #e2e8f0; }
-        .container { max-width: 1400px; margin: 0 auto; }
-        button, .btn { background: #2c3e66; color: white; border: none; padding: 8px 20px; border-radius: 40px; font-weight: 600; cursor: pointer; font-size: 0.9rem; }
-        button:hover { background: #1e2f4a; transform: scale(1.02); }
-        .btn-outline { background: transparent; border: 1px solid #2c3e66; color: #2c3e66; }
-        .btn-success { background: #2d6a4f; }
-        .btn-danger { background: #b91c1c; }
-        .btn-warning { background: #d97706; }
-        .btn-info { background: #0891b2; }
-        .card { background: white; border-radius: 28px; padding: 24px 30px; margin-bottom: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        body.dark .card { background: #1e293b; }
-        .hidden { display: none !important; }
-        .toolbar { display: flex; gap: 14px; justify-content: flex-end; flex-wrap: wrap; margin-bottom: 20px; }
-        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 18px; }
-        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 15px; }
-        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 15px; }
-        input, select, textarea { width: 100%; padding: 10px 14px; border-radius: 20px; border: 1px solid #ccc; background: #fff; }
-        body.dark input, body.dark select, body.dark textarea { background: #2d3a4f; border-color: #4b5e7c; color: #f1f5f9; }
-        .nav-inline { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; border-bottom: 1px solid #ccc; padding-bottom: 12px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #bbb; padding: 10px; text-align: left; vertical-align: top; }
-        body.dark th, body.dark td { border-color: #475569; }
-        .status-lunas { color: #2d6a4f; font-weight: bold; }
-        .status-belum { color: #b91c1c; }
-        .status-hadir { color: #2d6a4f; font-weight: bold; }
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; padding: 30px; border-radius: 28px; width: 500px; max-width: 90%; max-height: 80vh; overflow-y: auto; }
-        body.dark .modal-content { background: #1e293b; }
-        .event-card { background: #e2e8f0; border-radius: 16px; padding: 15px; margin-bottom: 10px; }
-        body.dark .event-card { background: #334155; }
-        .pengumuman-item { padding: 12px; border-left: 4px solid #2c3e66; margin-bottom: 12px; background: #f1f5f9; }
-        body.dark .pengumuman-item { background: #0f172a; }
-        .file-item { background: #e2e8f0; padding: 8px 12px; margin: 5px 0; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
-        body.dark .file-item { background: #334155; }
-        .upload-area { border: 2px dashed #2c3e66; border-radius: 20px; padding: 20px; text-align: center; margin: 15px 0; }
-        .laporan-card { background: #f8fafc; padding: 20px; border-radius: 16px; margin: 10px 0; font-family: 'Times New Roman', serif; }
-        body.dark .laporan-card { background: #0f172a; }
-        .keuangan-card { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 20px; border-radius: 16px; margin: 10px 0; }
-        .logo-container { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
-        .header-logo { width: 80px; height: 80px; object-fit: contain; }
-        .header-title { flex: 1; text-align: center; }
-        .total-kas { font-size: 2rem; font-weight: bold; text-align: center; margin: 20px 0; }
-        .tab-buttons { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px; flex-wrap: wrap; }
-        .tab-btn { background: transparent; border: none; padding: 8px 20px; cursor: pointer; font-weight: bold; color: #2c3e66; border-radius: 30px; }
-        body.dark .tab-btn { color: #cbd5e6; }
-        .tab-btn.active { background: #2c3e66; color: white; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .unit-card { background: #e2e8f0; border-radius: 16px; padding: 15px; margin-bottom: 15px; }
-        body.dark .unit-card { background: #334155; }
-        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; margin-top: 10px; }
-        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        .video-card { background: #f1f5f9; border-radius: 16px; padding: 15px; margin-bottom: 15px; }
-        body.dark .video-card { background: #1e293b; border: 1px solid #475569; }
-        .rpp-card { background: #f1f5f9; border-radius: 16px; padding: 15px; margin-bottom: 15px; }
-        body.dark .rpp-card { background: #0f172a; }
-        .sabuk-tab { display: inline-block; padding: 8px 20px; margin: 5px; border-radius: 30px; cursor: pointer; background: #e2e8f0; }
-        body.dark .sabuk-tab { background: #334155; }
-        .sabuk-tab.active { background: #2c3e66; color: white; }
-        .sabuk-content { display: none; }
-        .sabuk-content.active { display: block; }
-        .table-wrapper { overflow-x: auto; width: 100%; margin: 10px 0; }
-        .preview-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 2000; }
-        .preview-content { background: white; padding: 20px; border-radius: 16px; width: 90%; max-width: 1200px; max-height: 90vh; overflow-y: auto; }
-        body.dark .preview-content { background: #1e293b; }
-        /* Supabase config banner */
-        #supabaseConfigBanner { background: #fef3c7; border: 2px solid #f59e0b; border-radius: 16px; padding: 20px; margin-bottom: 20px; }
-        #supabaseConfigBanner h3 { color: #92400e; margin-bottom: 10px; }
-        #supabaseConfigBanner input { margin: 5px 0 10px; border-radius: 12px; }
-        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        .loading-spinner { background: white; padding: 30px 50px; border-radius: 20px; text-align: center; font-size: 1.2rem; }
-        body.dark .loading-spinner { background: #1e293b; color: #e2e8f0; }
-        .db-status { font-size: 0.75rem; padding: 3px 10px; border-radius: 20px; margin-left: 8px; }
-        .db-status.online { background: #d1fae5; color: #065f46; }
-        .db-status.offline { background: #fee2e2; color: #991b1b; }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:#0d1b2e; --navy-mid:#152236; --navy-light:#1e3050;
+  --crimson:#8b1a1a; --crimson-br:#c0392b;
+  --gold:#c9a84c; --gold-lt:#e8c96a; --gold-dim:rgba(201,168,76,.18);
+  --cream:#f6f1e9; --cream-dk:#e8dfc8;
+  --text:#1a1008; --text-mid:#4a3520; --text-lt:#d4c9b8;
+  --shadow:0 8px 28px rgba(0,0,0,.13); --shadow-lg:0 16px 48px rgba(0,0,0,.28);
+}
+*{margin:0;padding:0;box-sizing:border-box;transition:background .22s,color .22s,border-color .22s}
+body{font-family:'Crimson Pro',Georgia,serif;background:var(--cream);color:var(--text);
+  background-image:radial-gradient(ellipse at 18% 0,rgba(139,26,26,.07) 0,transparent 55%),
+                   radial-gradient(ellipse at 82% 100%,rgba(13,27,46,.09) 0,transparent 55%);}
+body.dark{
+  --cream:#0d1b2e;--cream-dk:#152236;--text:#e8dfc8;--text-mid:#c4b89a;
+  background:#0a1422;
+  background-image:radial-gradient(ellipse at 18% 0,rgba(139,26,26,.14) 0,transparent 55%),
+                   radial-gradient(ellipse at 82% 100%,rgba(201,168,76,.07) 0,transparent 55%);}
+.container{max-width:1320px;margin:0 auto;padding:0 18px 48px}
+
+/* ── Buttons ── */
+button,.btn{background:var(--navy);color:var(--gold-lt);border:1.5px solid var(--gold);
+  padding:9px 22px;border-radius:4px;font-family:'Cinzel',serif;font-weight:600;
+  font-size:.76rem;letter-spacing:.08em;cursor:pointer;text-transform:uppercase;transition:all .2s}
+button:hover,.btn:hover{background:var(--gold);color:var(--navy);border-color:var(--gold);
+  transform:translateY(-1px);box-shadow:0 4px 14px rgba(201,168,76,.38)}
+.btn-outline{background:transparent;border:1.5px solid var(--navy);color:var(--navy)}
+body.dark .btn-outline{border-color:var(--gold);color:var(--gold-lt)}
+.btn-outline:hover{background:var(--navy);color:var(--gold-lt)}
+.btn-success{background:#14402a;border-color:#2d7a4f;color:#a8f0c0}
+.btn-success:hover{background:#2d7a4f;color:#fff}
+.btn-danger{background:#420f0f;border-color:#8b1a1a;color:#f0a8a8}
+.btn-danger:hover{background:#8b1a1a;color:#fff}
+.btn-warning{background:#40280a;border-color:#c9820c;color:#f0d08a}
+.btn-warning:hover{background:#c9820c;color:#fff}
+.btn-info{background:#052438;border-color:#0a6ea0;color:#80cce8}
+.btn-info:hover{background:#0a6ea0;color:#fff}
+
+/* ── Cards ── */
+.card{background:rgba(255,255,255,.84);border:1px solid var(--gold-dim);border-radius:6px;
+  padding:26px 30px;margin-bottom:26px;box-shadow:var(--shadow);backdrop-filter:blur(4px);
+  position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--crimson),var(--gold),var(--crimson));opacity:.65}
+body.dark .card{background:rgba(18,30,50,.92);border-color:rgba(201,168,76,.15)}
+.hidden{display:none!important}
+
+/* ── Toolbar ── */
+.toolbar{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;
+  padding:12px 0;margin-bottom:6px;border-bottom:1px solid var(--gold-dim)}
+
+/* ── Grids ── */
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px}
+.grid-4{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px}
+
+/* ── Inputs ── */
+input,select,textarea{width:100%;padding:10px 16px;border-radius:4px;
+  border:1px solid rgba(13,27,46,.22);background:rgba(255,255,255,.9);
+  font-family:'Crimson Pro',serif;font-size:1rem;color:var(--text)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);
+  box-shadow:0 0 0 3px rgba(201,168,76,.14)}
+body.dark input,body.dark select,body.dark textarea{background:rgba(8,18,30,.82);
+  border-color:rgba(201,168,76,.18);color:var(--text-lt)}
+label{display:block;font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--text-mid);margin-bottom:5px;font-weight:600}
+body.dark label{color:var(--gold-lt)}
+
+/* ── Nav Inline ── */
+.nav-inline{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;
+  border-bottom:1px solid var(--gold-dim);padding-bottom:12px}
+.nav-inline button{font-size:.73rem;padding:7px 15px}
+
+/* ── Table ── */
+table{width:100%;border-collapse:collapse}
+th{background:var(--navy);color:var(--gold-lt);font-family:'Cinzel',serif;
+  font-size:.7rem;letter-spacing:.08em;padding:11px 10px;text-align:left;font-weight:600}
+td{border-bottom:1px solid rgba(201,168,76,.12);padding:10px;vertical-align:top;font-size:.95rem}
+tr:hover td{background:rgba(201,168,76,.05)}
+body.dark th{background:#08111e}
+body.dark td{border-color:rgba(201,168,76,.09)}
+.status-lunas{color:#2d7a4f;font-weight:bold}
+.status-belum{color:var(--crimson-br)}
+.status-hadir{color:#2d7a4f;font-weight:bold}
+
+/* ── Modal ── */
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.62);
+  display:flex;justify-content:center;align-items:center;z-index:1000}
+.modal-content{background:var(--cream);padding:32px;border-radius:6px;
+  border:1px solid var(--gold-dim);width:520px;max-width:92%;max-height:82vh;overflow-y:auto;
+  box-shadow:var(--shadow-lg)}
+body.dark .modal-content{background:var(--navy-mid)}
+.event-card{background:rgba(13,27,46,.06);border-left:3px solid var(--gold);
+  border-radius:0 4px 4px 0;padding:13px 17px;margin-bottom:10px}
+body.dark .event-card{background:rgba(255,255,255,.05)}
+.pengumuman-item{padding:13px 17px;border-left:4px solid var(--crimson);margin-bottom:11px;
+  background:rgba(139,26,26,.05);border-radius:0 4px 4px 0;font-size:1rem}
+body.dark .pengumuman-item{background:rgba(139,26,26,.12)}
+.file-item{background:rgba(13,27,46,.06);padding:9px 15px;margin:6px 0;border-radius:4px;
+  border:1px solid var(--gold-dim);display:flex;justify-content:space-between;align-items:center}
+body.dark .file-item{background:rgba(255,255,255,.06)}
+.upload-area{border:2px dashed rgba(201,168,76,.4);border-radius:6px;padding:22px;
+  text-align:center;margin:14px 0;background:rgba(201,168,76,.04)}
+.upload-area:hover{border-color:var(--gold);background:rgba(201,168,76,.08)}
+.laporan-card{background:rgba(246,241,233,.9);padding:26px;border-radius:4px;
+  border:1px solid var(--gold-dim);margin:12px 0;font-family:'Times New Roman',serif}
+body.dark .laporan-card{background:rgba(8,18,30,.8);border-color:rgba(201,168,76,.15)}
+.keuangan-card{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 100%);
+  color:var(--gold-lt);padding:22px;border-radius:6px;border:1px solid var(--gold-dim);margin:10px 0}
+
+/* ── Header ── */
+.logo-container{display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.header-logo{width:78px;height:78px;object-fit:contain}
+.header-title{flex:1;text-align:center}
+h1{font-family:'Cinzel',serif;font-size:clamp(1.2rem,3.5vw,1.9rem);font-weight:900;
+  color:var(--navy);letter-spacing:.05em;line-height:1.2;margin-bottom:4px}
+body.dark h1{color:var(--gold-lt)}
+h1 + h3,h1 ~ h3:first-of-type,.header-title h3{font-family:'Cinzel',serif;
+  font-size:clamp(.75rem,2vw,.92rem);color:var(--crimson);font-weight:600;letter-spacing:.14em}
+h2{font-family:'Cinzel',serif;font-weight:700;font-size:1.12rem;letter-spacing:.06em;
+  color:var(--navy);margin-bottom:13px;padding-bottom:9px;border-bottom:1px solid var(--gold-dim)}
+body.dark h2{color:var(--gold-lt)}
+h3{font-family:'Cinzel',serif;font-weight:600;font-size:.98rem;letter-spacing:.05em;
+  color:var(--navy);margin-bottom:11px}
+body.dark h3{color:var(--gold)}
+h4{font-family:'Cinzel',serif;font-size:.82rem;letter-spacing:.07em;
+  color:var(--text-mid);margin:10px 0 7px}
+body.dark h4{color:var(--gold-lt)}
+
+.total-kas{font-size:2rem;font-weight:bold;text-align:center;margin:20px 0;
+  font-family:'Cinzel',serif;color:var(--gold-lt)}
+
+/* ── Tabs ── */
+.tab-buttons{display:flex;gap:6px;margin-bottom:18px;border-bottom:1px solid var(--gold-dim);
+  padding-bottom:11px;flex-wrap:wrap}
+.tab-btn{background:transparent;border:1px solid rgba(13,27,46,.18);padding:7px 17px;
+  cursor:pointer;font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.07em;
+  color:var(--navy);border-radius:3px;text-transform:uppercase}
+body.dark .tab-btn{color:var(--text-lt);border-color:rgba(201,168,76,.18)}
+.tab-btn.active{background:var(--navy);color:var(--gold-lt);border-color:var(--navy)}
+body.dark .tab-btn.active{background:var(--gold);color:var(--navy);border-color:var(--gold)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.unit-card{background:rgba(13,27,46,.05);border:1px solid var(--gold-dim);
+  border-radius:4px;padding:15px;margin-bottom:13px}
+body.dark .unit-card{background:rgba(255,255,255,.04)}
+
+/* ── Video ── */
+.video-container{position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:4px;margin-top:10px}
+.video-container iframe{position:absolute;top:0;left:0;width:100%;height:100%}
+.video-card{background:rgba(13,27,46,.05);border:1px solid var(--gold-dim);
+  border-radius:4px;padding:15px;margin-bottom:13px}
+body.dark .video-card{background:rgba(255,255,255,.04)}
+.rpp-card{background:rgba(255,255,255,.7);border:1px solid var(--gold-dim);
+  border-radius:4px;padding:15px;margin-bottom:13px}
+body.dark .rpp-card{background:rgba(8,18,30,.6)}
+.sabuk-tab{display:inline-block;padding:7px 17px;margin:4px;border-radius:3px;cursor:pointer;
+  background:rgba(13,27,46,.07);font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.07em;
+  border:1px solid rgba(201,168,76,.14);text-transform:uppercase}
+body.dark .sabuk-tab{background:rgba(255,255,255,.06);color:var(--text-lt)}
+.sabuk-tab.active{background:var(--navy);color:var(--gold-lt);border-color:var(--navy)}
+.sabuk-content{display:none}
+.sabuk-content.active{display:block}
+.table-wrapper{overflow-x:auto;width:100%;margin:10px 0}
+.preview-modal{position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,.82);display:flex;justify-content:center;align-items:center;z-index:2000}
+.preview-content{background:var(--cream);padding:26px;border-radius:6px;
+  border:1px solid var(--gold-dim);width:90%;max-width:1200px;max-height:90vh;overflow-y:auto;
+  box-shadow:var(--shadow-lg)}
+body.dark .preview-content{background:var(--navy-mid)}
+
+/* ── Supabase banner — hidden, shown as modal ── */
+#supabaseConfigBanner{display:none}
+#sbModal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);
+  z-index:5000;display:flex;justify-content:center;align-items:center}
+#sbModal.hidden{display:none!important}
+#sbModalBox{background:var(--cream);border:2px solid var(--gold-dim);border-radius:8px;
+  padding:32px 36px;width:560px;max-width:94%;box-shadow:var(--shadow-lg);position:relative}
+body.dark #sbModalBox{background:var(--navy-mid)}
+#sbModalBox h3{font-family:'Cinzel',serif;color:var(--navy);font-size:1.08rem;margin-bottom:6px}
+body.dark #sbModalBox h3{color:var(--gold-lt)}
+#sqlSetupBox{margin-top:12px;background:rgba(13,27,46,.06);border-radius:4px;padding:14px}
+body.dark #sqlSetupBox{background:rgba(0,0,0,.3)}
+#sqlSetupText{font-size:.72rem;overflow-x:auto;white-space:pre-wrap;color:var(--text)}
+body.dark #sqlSetupText{color:var(--text-lt)}
+
+/* ── Floating gear btn ── */
+#gearBtn{position:fixed;bottom:22px;right:22px;width:48px;height:48px;
+  background:var(--navy);border:2px solid var(--gold);border-radius:50%;
+  color:var(--gold);font-size:1.25rem;cursor:pointer;z-index:4000;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 18px rgba(0,0,0,.42);transition:all .2s;padding:0}
+#gearBtn:hover{background:var(--gold);color:var(--navy);border-color:var(--gold);
+  transform:rotate(35deg) scale(1.08)}
+
+/* ── DB Badge ── */
+.db-status{font-family:'Cinzel',serif;font-size:.66rem;letter-spacing:.07em;
+  padding:3px 11px;border-radius:3px;margin-left:6px;text-transform:uppercase}
+.db-status.online{background:rgba(45,122,79,.14);color:#2d7a4f;border:1px solid #2d7a4f}
+.db-status.offline{background:rgba(139,26,26,.1);color:var(--crimson-br);border:1px solid var(--crimson)}
+
+/* ── Loading ── */
+.loading-overlay{position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,.55);display:flex;justify-content:center;align-items:center;z-index:9999}
+.loading-spinner{background:var(--cream);border:2px solid var(--gold-dim);padding:26px 48px;
+  border-radius:6px;text-align:center;font-size:1.05rem;font-family:'Cinzel',serif;
+  letter-spacing:.07em;box-shadow:var(--shadow-lg)}
+body.dark .loading-spinner{background:var(--navy-mid);color:var(--gold-lt)}
+
+/* ── Hero header ── */
+#siteHero{background:linear-gradient(135deg,var(--navy) 0%,#1a2d4a 58%,#28180c 100%);
+  border-bottom:2px solid rgba(201,168,76,.28);position:relative;overflow:hidden;margin-bottom:0}
+#siteHero::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 14% 55%,rgba(139,26,26,.28) 0,transparent 52%),
+             radial-gradient(ellipse at 88% 28%,rgba(201,168,76,.11) 0,transparent 48%)}
+#siteHero .hi{position:relative;z-index:1;max-width:1320px;margin:0 auto;
+  padding:20px 22px 16px;display:flex;align-items:center;gap:16px}
+#siteHero .hi img{width:62px;height:62px;object-fit:contain;
+  filter:drop-shadow(0 0 10px rgba(201,168,76,.42))}
+#siteHero .ht{flex:1;text-align:center}
+#siteHero .ht h1{font-family:'Cinzel',serif;font-size:clamp(.95rem,3.2vw,1.65rem);
+  font-weight:900;color:var(--gold-lt);letter-spacing:.05em;line-height:1.2;
+  text-shadow:0 2px 12px rgba(0,0,0,.45);margin-bottom:0}
+#siteHero .ht .sub{font-family:'Cinzel',serif;font-size:clamp(.62rem,1.7vw,.8rem);
+  color:rgba(201,168,76,.72);letter-spacing:.18em;margin-top:3px;font-weight:400;text-transform:uppercase}
+#siteHero .ht .tag{font-family:'Crimson Pro',serif;font-style:italic;font-size:.92rem;
+  color:rgba(232,223,200,.55);margin-top:3px}
+
+/* ── imgbb upload status ── */
+.imgbb-note{font-size:.8rem;color:var(--text-mid);margin-top:5px;font-style:italic}
+body.dark .imgbb-note{color:var(--text-lt)}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:rgba(13,27,46,.05)}
+::-webkit-scrollbar-thumb{background:rgba(201,168,76,.38);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--gold)}
+
+@media(max-width:600px){
+  .container{padding:0 10px 32px}
+  .card{padding:16px 14px}
+  #siteHero .hi{flex-direction:column;text-align:center;gap:8px}
+  button,.btn{padding:8px 16px;font-size:.72rem}
+}
+</style>
 </head>
 <body>
-<div class="container">
 
-    <!-- KONFIGURASI SUPABASE -->
-    <div id="supabaseConfigBanner">
-        <h3>⚙️ Konfigurasi Supabase</h3>
-        <p style="margin-bottom:10px; font-size:0.9rem; color:#78350f;">Masukkan URL dan Anon Key dari project Supabase Anda. Data akan tersimpan di database cloud.</p>
-        <div class="grid-2">
-            <div>
-                <label><strong>Supabase URL</strong></label>
-                <input type="text" id="sbUrl" placeholder="https://xxxx.supabase.co" value="">
-            </div>
-            <div>
-                <label><strong>Supabase Anon Key</strong></label>
-                <input type="text" id="sbKey" placeholder="eyJhbGc..." value="">
-            </div>
-        </div>
-        <button id="saveSupabaseConfig" class="btn-success" style="margin-top:10px;">💾 Simpan & Hubungkan</button>
-        <button id="testSupabaseConn" class="btn-info" style="margin-top:10px; margin-left:8px;">🔌 Test Koneksi</button>
-        <span id="connStatus" style="margin-left:10px; font-weight:bold;"></span>
-        <p style="margin-top:10px; font-size:0.8rem; color:#92400e;">
-            💡 <strong>Setup Database:</strong> Jalankan SQL di bawah ini di Supabase SQL Editor sebelum menggunakan aplikasi.
-            <button id="showSqlBtn" style="background:#92400e; font-size:0.75rem; padding:3px 10px; margin-left:5px;">Lihat SQL Setup</button>
-        </p>
-        <div id="sqlSetupBox" class="hidden" style="margin-top:10px; background:#fff7ed; border-radius:12px; padding:15px;">
-            <pre id="sqlSetupText" style="font-size:0.75rem; overflow-x:auto; white-space:pre-wrap; color:#1e293b;"></pre>
-            <button id="copySqlBtn" class="btn-info" style="margin-top:8px; font-size:0.8rem;">📋 Copy SQL</button>
-        </div>
+<!-- ── FLOATING GEAR BUTTON ── -->
+<button id="gearBtn" title="Konfigurasi Database">⚙</button>
+
+<!-- ── SUPABASE CONFIG MODAL ── -->
+<div id="sbModal" class="hidden">
+  <div id="sbModalBox">
+    <h3>⚙️ Konfigurasi Database Supabase</h3>
+    <p style="font-size:.9rem;margin-bottom:18px;opacity:.72;">Masukkan URL dan Anon Key dari project Supabase Anda untuk menyimpan data di cloud.</p>
+    <div style="margin-bottom:14px">
+      <label>Supabase URL</label>
+      <input type="text" id="sbUrl" placeholder="https://xxxx.supabase.co" value="">
     </div>
+    <div style="margin-bottom:18px">
+      <label>Supabase Anon Key</label>
+      <input type="text" id="sbKey" placeholder="eyJhbGc..." value="">
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <button id="saveSupabaseConfig" class="btn-success">💾 Simpan & Hubungkan</button>
+      <button id="testSupabaseConn" class="btn-info">🔌 Test Koneksi</button>
+      <button id="closeSbModal" class="btn-outline">✕ Tutup</button>
+      <span id="connStatus" style="font-size:.85rem;font-weight:bold;"></span>
+    </div>
+    <div style="margin-top:14px;font-size:.8rem;opacity:.65">
+      💡 <strong>Setup Database:</strong> Jalankan SQL di Supabase SQL Editor sebelum menggunakan.
+      <button id="showSqlBtn" style="font-size:.7rem;padding:3px 9px;margin-left:5px;">Lihat SQL</button>
+    </div>
+    <div id="sqlSetupBox" class="hidden">
+      <pre id="sqlSetupText"></pre>
+      <button id="copySqlBtn" class="btn-info" style="margin-top:8px;font-size:.78rem;">📋 Copy SQL</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── INVISIBLE OLD BANNER (keep IDs for JS compatibility) ── -->
+<div id="supabaseConfigBanner" style="display:none"></div>
+
+<!-- ── HERO HEADER ── -->
+<div id="siteHero">
+  <div class="hi">
+    <img id="heroLogoImg" style="display:none" alt="Logo">
+    <div class="ht">
+      <h1>🥋 Karate-Do Gojukai Indonesia</h1>
+      <div class="sub">Cabang Kota Tidore Kepulauan</div>
+      <div class="tag">Latih tubuh, baja mental, junjung tinggi persaudaraan</div>
+    </div>
+    <span id="dbStatusBadge" class="db-status offline">● Offline</span>
+  </div>
+</div>
+
+<div class="container">
 
     <div id="publicToolbar" class="toolbar">
         <button id="darkModeToggle">🌙 Dark Mode</button>
@@ -120,23 +312,32 @@
         <button id="showRegisterBtn">📝 Daftar Anggota</button>
         <button id="showLoginBtn">🔐 Login Peserta</button>
         <button id="showPelatihBtn" class="btn-outline">🥋 Zona Pelatih</button>
-        <span id="dbStatusBadge" class="db-status offline">● Offline</span>
     </div>
 
     <div id="landingSection">
-        <div class="card">
-            <div class="logo-container" id="landingLogoContainer">
-                <img id="landingLogo" class="header-logo" style="display:none;">
-                <div class="header-title">
-                    <h1>🥋 Karate-Do Gojukai Indonesia</h1>
-                    <h3>Cabang Kota Tidore Kepulauan</h3>
-                </div>
-            </div>
-            <p>Latih tubuh, baja mental, junjung tinggi persaudaraan.</p>
+        <div style="height:24px"></div>
+        <!-- hidden img kept for JS updateLogoDisplay() -->
+        <img id="landingLogo" style="display:none">
+        <div class="grid-2" style="margin-bottom:26px">
+          <div class="card" style="border-left:4px solid var(--crimson);padding-left:26px">
+            <h2>📜 Janji Karate-Do Goju</h2>
+            <ul style="list-style:none;padding:0">
+              <li style="padding:8px 0;border-bottom:1px solid var(--gold-dim);font-size:1.05rem">🤝 Belajar Karate-Do hanya untuk tujuan mulia.</li>
+              <li style="padding:8px 0;border-bottom:1px solid var(--gold-dim);font-size:1.05rem">⚡ Dengan semangat dan jiwa ksatria.</li>
+              <li style="padding:8px 0;font-size:1.05rem">🏅 Jaga nama baik perguruan.</li>
+            </ul>
+          </div>
+          <div class="card" style="border-left:4px solid var(--gold)">
+            <h2>🎯 Visi &amp; Misi</h2>
+            <p style="margin-bottom:12px;font-size:1.05rem;line-height:1.7"><strong>Visi:</strong> Cabang Teladan dengan karakter unggul &amp; prestasi di Maluku Utara.</p>
+            <p style="font-size:1.05rem;line-height:1.7"><strong>Misi:</strong> Latihan berkala, bina atlet daerah, tanamkan nilai Gojukai.</p>
+          </div>
         </div>
-        <div class="card"><h2>📜 Janji Karate-Do Goju</h2><ul><li>🤝 Belajar Karate-Do hanya untuk tujuan mulia.</li><li>⚡ Dengan semangat dan jiwa ksatria.</li><li>🏅 Jaga nama baik perguruan.</li></ul></div>
-        <div class="card"><h2>🎯 Visi & Misi</h2><p><strong>Visi:</strong> Cabang Teladan dengan karakter unggul & prestasi di Maluku Utara.</p><p><strong>Misi:</strong> Latihan berkala, bina atlet daerah, tanamkan nilai Gojukai.</p></div>
-        <div class="card"><h2>🤝 Ayo Bergabung!</h2><p>Daftar sekarang, jadilah karateka sejati.</p><button id="landingDaftarBtn" class="btn">Daftar Sekarang →</button></div>
+        <div class="card" style="text-align:center;padding:36px 30px">
+          <h2 style="border:none;font-size:1.4rem;color:var(--navy);margin-bottom:10px">🤝 Ayo Bergabung!</h2>
+          <p style="font-size:1.15rem;margin-bottom:22px;color:var(--text-mid)">Daftar sekarang, jadilah karateka sejati Tidore Kepulauan.</p>
+          <button id="landingDaftarBtn" class="btn" style="padding:12px 36px;font-size:.85rem">Daftar Sekarang →</button>
+        </div>
     </div>
 
     <!-- FORM PENDAFTARAN -->
@@ -158,7 +359,7 @@
                 <div><label>Sabuk Awal</label><select id="sabukAwal"><option>Putih</option><option>Kuning</option><option>Orange</option><option>Hijau</option><option>Biru</option><option>Coklat</option></select></div>
                 <div><label>Username</label><input type="text" id="username" required placeholder="pilih username"></div>
                 <div><label>Password</label><input type="password" id="password" required placeholder="pilih password"></div>
-                <div><label>Foto 3x4</label><input type="file" id="fotoUpload" accept="image/*"></div>
+                <div><label>Foto 3x4</label><input type="file" id="fotoUpload" accept="image/*"><div class="imgbb-note">📤 Foto akan diupload ke imgbb (CDN gratis)</div></div>
                 <div><img id="fotoPreview" style="display:none; width:90px; height:90px; object-fit:cover; border-radius:12px;"></div>
             </div>
             <div><input type="checkbox" id="syarat" required> Saya setuju dengan AD/ART & iuran Rp.100.000/bln.</div>
@@ -169,22 +370,22 @@
     </div>
 
     <!-- LOGIN PESERTA -->
-    <div id="loginPanel" class="card hidden">
-        <h2>🔐 Login Peserta</h2>
-        <input type="text" id="loginUser" placeholder="Username" style="margin-bottom:12px">
-        <input type="password" id="loginPass" placeholder="Password">
-        <button id="doLogin" class="btn">Login</button>
-        <p style="margin-top:8px; font-size:12px;">Gunakan username & password saat mendaftar</p>
-        <button id="backToLanding2" class="btn-outline" style="margin-top:12px">Kembali</button>
+    <div id="loginPanel" class="card hidden" style="max-width:420px;margin:40px auto">
+        <h2 style="text-align:center;border:none;font-size:1.3rem">🔐 Login Peserta</h2>
+        <p style="text-align:center;font-size:.9rem;margin-bottom:20px;opacity:.65">Gunakan username &amp; password saat mendaftar</p>
+        <div style="margin-bottom:14px"><label>Username</label><input type="text" id="loginUser" placeholder="Masukkan username"></div>
+        <div style="margin-bottom:20px"><label>Password</label><input type="password" id="loginPass" placeholder="Masukkan password"></div>
+        <button id="doLogin" class="btn" style="width:100%;padding:12px;font-size:.82rem">🔑 Masuk</button>
+        <button id="backToLanding2" class="btn-outline" style="width:100%;margin-top:10px">← Kembali</button>
     </div>
 
     <!-- ZONA PELATIH Login -->
-    <div id="pelatihLoginPanel" class="card hidden">
-        <h2>🥋 Zona Khusus Pelatih</h2>
-        <p>Masukkan Kode Akses Pelatih untuk masuk ke zona khusus pelatih.</p>
-        <input type="password" id="kodePelatihInput" placeholder="Kode Pelatih" style="margin:15px 0">
-        <button id="submitPelatihLogin" class="btn">Masuk Zona Pelatih</button>
-        <button id="backFromPelatih" class="btn-outline" style="margin-top:12px">Kembali</button>
+    <div id="pelatihLoginPanel" class="card hidden" style="max-width:420px;margin:40px auto">
+        <h2 style="text-align:center;border:none;font-size:1.3rem">🥋 Zona Khusus Pelatih</h2>
+        <p style="text-align:center;font-size:.9rem;margin-bottom:20px;opacity:.65">Masukkan Kode Akses Pelatih untuk melanjutkan.</p>
+        <div style="margin-bottom:20px"><label>Kode Akses Pelatih</label><input type="password" id="kodePelatihInput" placeholder="Masukkan kode"></div>
+        <button id="submitPelatihLogin" class="btn" style="width:100%;padding:12px;font-size:.82rem">🥋 Masuk Zona Pelatih</button>
+        <button id="backFromPelatih" class="btn-outline" style="width:100%;margin-top:10px">← Kembali</button>
     </div>
 
     <!-- ZONA PELATIH Content -->
@@ -881,13 +1082,8 @@ logoutPelatihBtn.onclick = () => {
     document.getElementById('kodePelatihInput').value = '';
 };
 
-fotoInput.addEventListener('change', (e) => {
-    if (e.target.files[0]) {
-        const reader = new FileReader();
-        reader.onload = (ev) => { fotoPreview.src = ev.target.result; fotoPreview.style.display = 'block'; };
-        reader.readAsDataURL(e.target.files[0]);
-    } else fotoPreview.style.display = 'none';
-});
+// fotoInput change handler moved to imgbb section below (handles base64 preview + imgbb upload)
+// fotoInput.addEventListener('change', ...) — replaced
 
 // ==================== REGISTRASI ====================
 document.getElementById('registrationForm').addEventListener('submit', async (e) => {
@@ -928,9 +1124,15 @@ document.getElementById('registrationForm').addEventListener('submit', async (e)
         }
     };
     if (fotoInput.files.length) {
-        const fr = new FileReader();
-        fr.onload = (e2) => simpan(e2.target.result);
-        fr.readAsDataURL(fotoInput.files[0]);
+        // Use imgbb URL if already uploaded, else fallback to base64
+        const cachedUrl = fotoPreview.dataset && fotoPreview.dataset.imgbbUrl;
+        if (cachedUrl) {
+            simpan(cachedUrl);
+        } else {
+            const fr = new FileReader();
+            fr.onload = (e2) => simpan(e2.target.result);
+            fr.readAsDataURL(fotoInput.files[0]);
+        }
     } else simpan('');
 });
 
@@ -1149,22 +1351,27 @@ function showAdminPanel(section) {
     const panel = document.getElementById('adminPanelContent');
 
     if (section === 'logo') {
-        panel.innerHTML = `<h3>🖼️ Upload Logo</h3><div class="upload-area"><input type="file" id="logoUpload"><button id="uploadLogoBtn" class="btn-success">Upload</button></div>`;
+        panel.innerHTML = `<h3>🖼️ Upload Logo</h3><div class="upload-area"><input type="file" id="logoUpload" accept="image/*"><div class="imgbb-note">📤 Logo akan diupload ke imgbb (CDN)</div><button id="uploadLogoBtn" class="btn-success" style="margin-top:10px">Upload Logo</button></div>`;
         document.getElementById('uploadLogoBtn').onclick = async () => {
             const file = document.getElementById('logoUpload').files[0];
             if (!file) { alert('Pilih file!'); return; }
-            showLoading('Mengupload logo...');
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                try {
-                    await saveLogo(e.target.result);
-                    updateLogoDisplay(e.target.result);
-                    alert('Logo berhasil diupload!');
-                } catch (err) {
-                    alert('Gagal: ' + err.message);
-                } finally { hideLoading(); }
-            };
-            reader.readAsDataURL(file);
+            showLoading('Mengupload logo ke imgbb...');
+            try {
+                const url = await uploadToImgbb(file);
+                await saveLogo(url);
+                updateLogoDisplay(url);
+                alert('Logo berhasil diupload!');
+            } catch (err) {
+                // Fallback to base64
+                const reader = new FileReader();
+                reader.onload = async (ev) => {
+                    try { await saveLogo(ev.target.result); updateLogoDisplay(ev.target.result); alert('Logo diupload (base64)!'); }
+                    catch(e2) { alert('Gagal: ' + e2.message); }
+                    finally { hideLoading(); }
+                };
+                reader.readAsDataURL(file); return;
+            }
+            hideLoading();
         };
     } else if (section === 'pengurus') {
         panel.innerHTML = `<h3>📌 Kelola File Pengurus</h3><div class="upload-area"><input type="file" id="uploadFilePengurus"><button id="uploadBtnPengurus" class="btn-success">Upload</button></div><h4>File Tersimpan</h4><div id="fileListPengurus"></div>`;
@@ -1909,6 +2116,65 @@ showPublicToolbar(true);
 if (SUPABASE_URL && SUPABASE_KEY) {
     loadAllData();
 }
+
+// ==================== IMGBB UPLOAD HELPER ====================
+const IMGBB_API_KEY = '287432b34df8f0d38d0d776f95bc6823'; // free public demo key – replace with yours
+
+async function uploadToImgbb(file) {
+    const fd = new FormData();
+    fd.append('image', file);
+    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method:'POST', body:fd });
+    const json = await res.json();
+    if (!json.success) throw new Error('imgbb upload failed: ' + JSON.stringify(json.error));
+    return json.data.url; // returns direct image URL
+}
+
+// ==================== GEAR BUTTON + SUPABASE MODAL ==================
+document.getElementById('gearBtn').onclick = () => document.getElementById('sbModal').classList.remove('hidden');
+document.getElementById('closeSbModal').onclick = () => document.getElementById('sbModal').classList.add('hidden');
+document.getElementById('sbModal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('sbModal')) document.getElementById('sbModal').classList.add('hidden');
+});
+
+// Sync hero logo with landingLogo updates — patched after definition
+const _patchHeroLogo = () => {
+    const hero = document.getElementById('heroLogoImg');
+    const orig = updateLogoDisplay;
+    window.updateLogoDisplay = function(data) {
+        orig(data);
+        if (hero && data) { hero.src = data; hero.style.display = 'block'; }
+    };
+};
+// Call after all code has run (setTimeout 0 to ensure updateLogoDisplay is defined)
+setTimeout(_patchHeroLogo, 0);
+
+// ==================== IMGBB: FOTO UPLOAD (Registration) ====================
+// Override fotoInput change to also upload to imgbb
+fotoInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) { fotoPreview.style.display = 'none'; return; }
+    // Show local preview immediately
+    const reader = new FileReader();
+    reader.onload = (ev) => { fotoPreview.src = ev.target.result; fotoPreview.style.display = 'block'; };
+    reader.readAsDataURL(file);
+    // Upload to imgbb in background
+    try {
+        fotoPreview.style.opacity = '0.5';
+        const url = await uploadToImgbb(file);
+        fotoPreview.src = url;
+        fotoPreview.style.opacity = '1';
+        fotoPreview.dataset.imgbbUrl = url;
+    } catch(err) {
+        console.warn('imgbb upload failed, using base64 fallback:', err.message);
+        fotoPreview.style.opacity = '1';
+        fotoPreview.dataset.imgbbUrl = '';
+    }
+}, true); // capture phase so it runs AFTER existing listener sets base64
+
+// Logo upload now handled directly in showAdminPanel (patched above)
+
+// Registration submit uses imgbb URL via fotoPreview.dataset.imgbbUrl (patched inline above)
+
 </script>
 </body>
 </html>
