@@ -1,0 +1,1914 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karate-Do Gojukai | Tidore Kepulauan</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; transition: background 0.2s, color 0.2s; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #1e293b; padding: 24px 20px; }
+        body.dark { background: #0f172a; color: #e2e8f0; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        button, .btn { background: #2c3e66; color: white; border: none; padding: 8px 20px; border-radius: 40px; font-weight: 600; cursor: pointer; font-size: 0.9rem; }
+        button:hover { background: #1e2f4a; transform: scale(1.02); }
+        .btn-outline { background: transparent; border: 1px solid #2c3e66; color: #2c3e66; }
+        .btn-success { background: #2d6a4f; }
+        .btn-danger { background: #b91c1c; }
+        .btn-warning { background: #d97706; }
+        .btn-info { background: #0891b2; }
+        .card { background: white; border-radius: 28px; padding: 24px 30px; margin-bottom: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        body.dark .card { background: #1e293b; }
+        .hidden { display: none !important; }
+        .toolbar { display: flex; gap: 14px; justify-content: flex-end; flex-wrap: wrap; margin-bottom: 20px; }
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 18px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 15px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 15px; }
+        input, select, textarea { width: 100%; padding: 10px 14px; border-radius: 20px; border: 1px solid #ccc; background: #fff; }
+        body.dark input, body.dark select, body.dark textarea { background: #2d3a4f; border-color: #4b5e7c; color: #f1f5f9; }
+        .nav-inline { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; border-bottom: 1px solid #ccc; padding-bottom: 12px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #bbb; padding: 10px; text-align: left; vertical-align: top; }
+        body.dark th, body.dark td { border-color: #475569; }
+        .status-lunas { color: #2d6a4f; font-weight: bold; }
+        .status-belum { color: #b91c1c; }
+        .status-hadir { color: #2d6a4f; font-weight: bold; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 30px; border-radius: 28px; width: 500px; max-width: 90%; max-height: 80vh; overflow-y: auto; }
+        body.dark .modal-content { background: #1e293b; }
+        .event-card { background: #e2e8f0; border-radius: 16px; padding: 15px; margin-bottom: 10px; }
+        body.dark .event-card { background: #334155; }
+        .pengumuman-item { padding: 12px; border-left: 4px solid #2c3e66; margin-bottom: 12px; background: #f1f5f9; }
+        body.dark .pengumuman-item { background: #0f172a; }
+        .file-item { background: #e2e8f0; padding: 8px 12px; margin: 5px 0; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
+        body.dark .file-item { background: #334155; }
+        .upload-area { border: 2px dashed #2c3e66; border-radius: 20px; padding: 20px; text-align: center; margin: 15px 0; }
+        .laporan-card { background: #f8fafc; padding: 20px; border-radius: 16px; margin: 10px 0; font-family: 'Times New Roman', serif; }
+        body.dark .laporan-card { background: #0f172a; }
+        .keuangan-card { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 20px; border-radius: 16px; margin: 10px 0; }
+        .logo-container { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
+        .header-logo { width: 80px; height: 80px; object-fit: contain; }
+        .header-title { flex: 1; text-align: center; }
+        .total-kas { font-size: 2rem; font-weight: bold; text-align: center; margin: 20px 0; }
+        .tab-buttons { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px; flex-wrap: wrap; }
+        .tab-btn { background: transparent; border: none; padding: 8px 20px; cursor: pointer; font-weight: bold; color: #2c3e66; border-radius: 30px; }
+        body.dark .tab-btn { color: #cbd5e6; }
+        .tab-btn.active { background: #2c3e66; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .unit-card { background: #e2e8f0; border-radius: 16px; padding: 15px; margin-bottom: 15px; }
+        body.dark .unit-card { background: #334155; }
+        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; margin-top: 10px; }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .video-card { background: #f1f5f9; border-radius: 16px; padding: 15px; margin-bottom: 15px; }
+        body.dark .video-card { background: #1e293b; border: 1px solid #475569; }
+        .rpp-card { background: #f1f5f9; border-radius: 16px; padding: 15px; margin-bottom: 15px; }
+        body.dark .rpp-card { background: #0f172a; }
+        .sabuk-tab { display: inline-block; padding: 8px 20px; margin: 5px; border-radius: 30px; cursor: pointer; background: #e2e8f0; }
+        body.dark .sabuk-tab { background: #334155; }
+        .sabuk-tab.active { background: #2c3e66; color: white; }
+        .sabuk-content { display: none; }
+        .sabuk-content.active { display: block; }
+        .table-wrapper { overflow-x: auto; width: 100%; margin: 10px 0; }
+        .preview-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 2000; }
+        .preview-content { background: white; padding: 20px; border-radius: 16px; width: 90%; max-width: 1200px; max-height: 90vh; overflow-y: auto; }
+        body.dark .preview-content { background: #1e293b; }
+        /* Supabase config banner */
+        #supabaseConfigBanner { background: #fef3c7; border: 2px solid #f59e0b; border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+        #supabaseConfigBanner h3 { color: #92400e; margin-bottom: 10px; }
+        #supabaseConfigBanner input { margin: 5px 0 10px; border-radius: 12px; }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        .loading-spinner { background: white; padding: 30px 50px; border-radius: 20px; text-align: center; font-size: 1.2rem; }
+        body.dark .loading-spinner { background: #1e293b; color: #e2e8f0; }
+        .db-status { font-size: 0.75rem; padding: 3px 10px; border-radius: 20px; margin-left: 8px; }
+        .db-status.online { background: #d1fae5; color: #065f46; }
+        .db-status.offline { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- KONFIGURASI SUPABASE -->
+    <div id="supabaseConfigBanner">
+        <h3>⚙️ Konfigurasi Supabase</h3>
+        <p style="margin-bottom:10px; font-size:0.9rem; color:#78350f;">Masukkan URL dan Anon Key dari project Supabase Anda. Data akan tersimpan di database cloud.</p>
+        <div class="grid-2">
+            <div>
+                <label><strong>Supabase URL</strong></label>
+                <input type="text" id="sbUrl" placeholder="https://xxxx.supabase.co" value="">
+            </div>
+            <div>
+                <label><strong>Supabase Anon Key</strong></label>
+                <input type="text" id="sbKey" placeholder="eyJhbGc..." value="">
+            </div>
+        </div>
+        <button id="saveSupabaseConfig" class="btn-success" style="margin-top:10px;">💾 Simpan & Hubungkan</button>
+        <button id="testSupabaseConn" class="btn-info" style="margin-top:10px; margin-left:8px;">🔌 Test Koneksi</button>
+        <span id="connStatus" style="margin-left:10px; font-weight:bold;"></span>
+        <p style="margin-top:10px; font-size:0.8rem; color:#92400e;">
+            💡 <strong>Setup Database:</strong> Jalankan SQL di bawah ini di Supabase SQL Editor sebelum menggunakan aplikasi.
+            <button id="showSqlBtn" style="background:#92400e; font-size:0.75rem; padding:3px 10px; margin-left:5px;">Lihat SQL Setup</button>
+        </p>
+        <div id="sqlSetupBox" class="hidden" style="margin-top:10px; background:#fff7ed; border-radius:12px; padding:15px;">
+            <pre id="sqlSetupText" style="font-size:0.75rem; overflow-x:auto; white-space:pre-wrap; color:#1e293b;"></pre>
+            <button id="copySqlBtn" class="btn-info" style="margin-top:8px; font-size:0.8rem;">📋 Copy SQL</button>
+        </div>
+    </div>
+
+    <div id="publicToolbar" class="toolbar">
+        <button id="darkModeToggle">🌙 Dark Mode</button>
+        <button id="adminLoginBtn" class="btn-outline">👑 Admin</button>
+        <button id="showRegisterBtn">📝 Daftar Anggota</button>
+        <button id="showLoginBtn">🔐 Login Peserta</button>
+        <button id="showPelatihBtn" class="btn-outline">🥋 Zona Pelatih</button>
+        <span id="dbStatusBadge" class="db-status offline">● Offline</span>
+    </div>
+
+    <div id="landingSection">
+        <div class="card">
+            <div class="logo-container" id="landingLogoContainer">
+                <img id="landingLogo" class="header-logo" style="display:none;">
+                <div class="header-title">
+                    <h1>🥋 Karate-Do Gojukai Indonesia</h1>
+                    <h3>Cabang Kota Tidore Kepulauan</h3>
+                </div>
+            </div>
+            <p>Latih tubuh, baja mental, junjung tinggi persaudaraan.</p>
+        </div>
+        <div class="card"><h2>📜 Janji Karate-Do Goju</h2><ul><li>🤝 Belajar Karate-Do hanya untuk tujuan mulia.</li><li>⚡ Dengan semangat dan jiwa ksatria.</li><li>🏅 Jaga nama baik perguruan.</li></ul></div>
+        <div class="card"><h2>🎯 Visi & Misi</h2><p><strong>Visi:</strong> Cabang Teladan dengan karakter unggul & prestasi di Maluku Utara.</p><p><strong>Misi:</strong> Latihan berkala, bina atlet daerah, tanamkan nilai Gojukai.</p></div>
+        <div class="card"><h2>🤝 Ayo Bergabung!</h2><p>Daftar sekarang, jadilah karateka sejati.</p><button id="landingDaftarBtn" class="btn">Daftar Sekarang →</button></div>
+    </div>
+
+    <!-- FORM PENDAFTARAN -->
+    <div id="formSection" class="card hidden">
+        <h2>📋 Formulir Pendaftaran Anggota</h2>
+        <form id="registrationForm">
+            <div class="grid-2">
+                <div><label>Nama Lengkap</label><input type="text" id="nama" required></div>
+                <div><label>Tempat & Tgl Lahir</label><input type="text" id="ttl" placeholder="Ternate, 12/05/2000"></div>
+                <div><label>Jenis Kelamin</label><select id="jk"><option>Laki-laki</option><option>Perempuan</option></select></div>
+                <div><label>Pekerjaan/Sekolah</label><input type="text" id="pekerjaan"></div>
+                <div><label>Alamat Rumah</label><input type="text" id="alamat"></div>
+                <div><label>No. HP</label><input type="text" id="telepon"></div>
+                <div><label>Orang Tua/Wali</label><input type="text" id="ortu"></div>
+                <div><label>Pekerjaan Orang Tua</label><input type="text" id="pekerjaanortu"></div>
+                <div><label>Alamat Orang Tua</label><input type="text" id="alamatortu"></div>
+                <div><label>No. Telepon Orang Tua</label><input type="text" id="teleponortu"></div>
+                <div><label>Unit Latihan</label><select id="unit"></select></div>
+                <div><label>Sabuk Awal</label><select id="sabukAwal"><option>Putih</option><option>Kuning</option><option>Orange</option><option>Hijau</option><option>Biru</option><option>Coklat</option></select></div>
+                <div><label>Username</label><input type="text" id="username" required placeholder="pilih username"></div>
+                <div><label>Password</label><input type="password" id="password" required placeholder="pilih password"></div>
+                <div><label>Foto 3x4</label><input type="file" id="fotoUpload" accept="image/*"></div>
+                <div><img id="fotoPreview" style="display:none; width:90px; height:90px; object-fit:cover; border-radius:12px;"></div>
+            </div>
+            <div><input type="checkbox" id="syarat" required> Saya setuju dengan AD/ART & iuran Rp.100.000/bln.</div>
+            <button type="submit" class="btn" style="margin-top:16px">Kirim Pendaftaran</button>
+        </form>
+        <p id="formMessage"></p>
+        <button id="backToLanding" class="btn-outline" style="margin-top:12px">← Kembali</button>
+    </div>
+
+    <!-- LOGIN PESERTA -->
+    <div id="loginPanel" class="card hidden">
+        <h2>🔐 Login Peserta</h2>
+        <input type="text" id="loginUser" placeholder="Username" style="margin-bottom:12px">
+        <input type="password" id="loginPass" placeholder="Password">
+        <button id="doLogin" class="btn">Login</button>
+        <p style="margin-top:8px; font-size:12px;">Gunakan username & password saat mendaftar</p>
+        <button id="backToLanding2" class="btn-outline" style="margin-top:12px">Kembali</button>
+    </div>
+
+    <!-- ZONA PELATIH Login -->
+    <div id="pelatihLoginPanel" class="card hidden">
+        <h2>🥋 Zona Khusus Pelatih</h2>
+        <p>Masukkan Kode Akses Pelatih untuk masuk ke zona khusus pelatih.</p>
+        <input type="password" id="kodePelatihInput" placeholder="Kode Pelatih" style="margin:15px 0">
+        <button id="submitPelatihLogin" class="btn">Masuk Zona Pelatih</button>
+        <button id="backFromPelatih" class="btn-outline" style="margin-top:12px">Kembali</button>
+    </div>
+
+    <!-- ZONA PELATIH Content -->
+    <div id="pelatihContentArea" class="hidden">
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:20px;">
+                <h2>🥋 Zona Khusus Pelatih</h2>
+                <button id="logoutPelatihBtn" class="btn-outline">🚪 Keluar</button>
+            </div>
+            <div class="nav-inline" id="pelatihMenuNav">
+                <button data-menu="silabus">📚 Silabus & RPP</button>
+                <button data-menu="video">🎬 Video Gerakan</button>
+                <button data-menu="kata">🥋 Video Kata</button>
+            </div>
+            <div id="pelatihContent"></div>
+        </div>
+    </div>
+
+    <!-- MEMBER AREA -->
+    <div id="memberAreaContainer" class="hidden">
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+                <div class="nav-inline" id="memberMenuNav"></div>
+                <button id="logoutBtnMember" class="btn-outline">🚪 Logout</button>
+            </div>
+            <div id="memberContent">Pilih menu di atas</div>
+        </div>
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div id="adminPanelContainer" class="hidden">
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:20px;">
+                <h2>👑 Panel Administrator</h2>
+                <button id="logoutAdminBtn" class="btn-outline">🚪 Keluar Admin</button>
+            </div>
+            <div class="nav-inline" id="adminMenuNav"></div>
+            <div id="adminPanelContent"></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+<script>
+// ==================== SUPABASE CONFIG ====================
+const SB_URL_KEY = 'gojukai_sb_url';
+const SB_KEY_KEY = 'gojukai_sb_key';
+
+let SUPABASE_URL = localStorage.getItem(SB_URL_KEY) || '';
+let SUPABASE_KEY = localStorage.getItem(SB_KEY_KEY) || '';
+let isDbConnected = false;
+
+// Pre-fill config fields
+document.getElementById('sbUrl').value = SUPABASE_URL;
+document.getElementById('sbKey').value = SUPABASE_KEY;
+
+// SQL Setup script
+const SQL_SETUP = `-- ============================================================
+-- GOJUKAI TIDORE - Supabase Database Setup
+-- Jalankan script ini di Supabase SQL Editor
+-- ============================================================
+
+create table if not exists gojukai_settings (
+  key text primary key,
+  value text
+);
+
+create table if not exists gojukai_pendaftar (
+  id bigint primary key,
+  nama text, ttl text, jk text, pekerjaan text,
+  alamat text, telepon text, ortu text, pekerjaanortu text,
+  alamatortu text, teleponortu text, unit text,
+  sabuk_awal text default 'Putih', foto text,
+  tanggal text, username text unique, password text
+);
+
+create table if not exists gojukai_units (
+  id serial primary key,
+  nama text unique,
+  pelatih jsonb default '[]',
+  karateka jsonb default '[]'
+);
+
+create table if not exists gojukai_iuran (
+  id serial primary key,
+  member_id bigint, bulan text, nominal integer,
+  status text default 'Belum Lunas',
+  tgl_bayar text, validasi_by text
+);
+
+create table if not exists gojukai_absensi (
+  id serial primary key,
+  tanggal text, unit text,
+  member_id bigint, status text
+);
+
+create table if not exists gojukai_pengumuman (
+  id serial primary key,
+  teks text, created_at timestamp default now()
+);
+
+create table if not exists gojukai_penilaian (
+  id serial primary key,
+  tanggal text, lokasi text, cabang text,
+  member_id bigint unique,
+  nilai jsonb
+);
+
+create table if not exists gojukai_kas_pengeluaran (
+  id serial primary key,
+  tanggal text, keterangan text, nominal integer,
+  created_at timestamp default now()
+);
+
+create table if not exists gojukai_files (
+  id serial primary key,
+  kategori text, nama text, url text,
+  created_at timestamp default now()
+);
+
+create table if not exists gojukai_video_latihan (
+  id serial primary key,
+  judul text, url text,
+  created_at timestamp default now()
+);
+
+create table if not exists gojukai_video_kata (
+  id serial primary key,
+  sabuk text unique, judul text, url text
+);
+
+-- Insert data awal jika belum ada
+insert into gojukai_settings (key, value) values
+  ('kode_pelatih', 'GOJUKAI2025'),
+  ('biaya_ujian', '{"Putih":90000,"Kuning":100000,"Orange":100000,"Hijau":110000,"Biru":120000,"Coklat":130000}'),
+  ('laporan_latihan', '{"komda":"MALUT","cabang":"TIDORE KEPULAUAN","unit":"RQL TIDORE","pelatih":["Senpai Rohim Puryanto"],"tanggal":"2025-12-28","pukul":"16.00 - 18.00 WIT"}'),
+  ('logo', '')
+on conflict (key) do nothing;
+
+insert into gojukai_units (nama, pelatih, karateka) values
+  ('Tidore Pusat', '["Sensei Rahmat"]', '[]'),
+  ('Rum', '["Sensei Fatima"]', '[]'),
+  ('Bastiong', '["Senpai Joko"]', '[]')
+on conflict (nama) do nothing;
+
+insert into gojukai_pengumuman (teks) values
+  ('📢 Latihan rutin setiap Sabtu & Minggu pukul 15.00 WIT di Dojo Tidore')
+on conflict do nothing;
+
+insert into gojukai_video_kata (sabuk, judul, url) values
+  ('Putih', 'Taikyoku Sono Ichi', 'https://www.youtube.com/embed/dQw4w9WgXcQ'),
+  ('Kuning', 'Gekisai Dai Ichi', 'https://www.youtube.com/embed/dQw4w9WgXcQ'),
+  ('Orange', 'Gekisai Dai Ni', 'https://www.youtube.com/embed/dQw4w9WgXcQ'),
+  ('Hijau', 'Saifa', 'https://www.youtube.com/embed/dQw4w9WgXcQ'),
+  ('Biru', 'Seienchin', 'https://www.youtube.com/embed/dQw4w9WgXcQ'),
+  ('Coklat', 'Sanchin / Tensho', 'https://www.youtube.com/embed/dQw4w9WgXcQ')
+on conflict (sabuk) do nothing;
+
+insert into gojukai_video_latihan (judul, url) values
+  ('Kuda-kuda Dasar (Dachi)', 'https://www.youtube.com/embed/dQw4w9WgXcQ'),
+  ('Pukulan Dasar (Tsuki)', 'https://www.youtube.com/embed/dQw4w9WgXcQ')
+on conflict do nothing;`;
+
+document.getElementById('sqlSetupText').textContent = SQL_SETUP;
+document.getElementById('showSqlBtn').onclick = () => {
+    document.getElementById('sqlSetupBox').classList.toggle('hidden');
+};
+document.getElementById('copySqlBtn').onclick = () => {
+    navigator.clipboard.writeText(SQL_SETUP).then(() => alert('SQL berhasil di-copy!'));
+};
+
+// ==================== SUPABASE API HELPER ====================
+async function sbFetch(endpoint, options = {}) {
+    if (!SUPABASE_URL || !SUPABASE_KEY) throw new Error('Supabase belum dikonfigurasi');
+    const url = `${SUPABASE_URL}/rest/v1/${endpoint}`;
+    const headers = {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': options.prefer || 'return=representation',
+        ...options.headers
+    };
+    const res = await fetch(url, { ...options, headers });
+    if (!res.ok) {
+        const err = await res.text();
+        throw new Error(`Supabase error ${res.status}: ${err}`);
+    }
+    const text = await res.text();
+    return text ? JSON.parse(text) : [];
+}
+
+const sb = {
+    async select(table, query = '') { return sbFetch(`${table}?${query}&order=id`); },
+    async insert(table, data) { return sbFetch(table, { method: 'POST', body: JSON.stringify(data) }); },
+    async update(table, id, data, idCol = 'id') {
+        return sbFetch(`${table}?${idCol}=eq.${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+    },
+    async upsert(table, data) {
+        return sbFetch(table, { method: 'POST', body: JSON.stringify(data), prefer: 'return=representation', headers: { 'Prefer': 'resolution=merge-duplicates,return=representation' } });
+    },
+    async delete(table, id, idCol = 'id') {
+        return sbFetch(`${table}?${idCol}=eq.${id}`, { method: 'DELETE', prefer: 'return=minimal' });
+    },
+    async getSetting(key) {
+        const res = await sbFetch(`gojukai_settings?key=eq.${key}`);
+        return res.length ? res[0].value : null;
+    },
+    async setSetting(key, value) {
+        const v = typeof value === 'object' ? JSON.stringify(value) : String(value);
+        return sbFetch(`gojukai_settings`, {
+            method: 'POST', body: JSON.stringify({ key, value: v }),
+            headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' }
+        });
+    }
+};
+
+// ==================== IN-MEMORY DATA ====================
+let registrations = [];
+let iuranData = [];
+let uploadedFiles = { pengurus: [], adart: [], kurikulum: [] };
+let kodePelatih = 'GOJUKAI2025';
+let biayaUjian = { 'Putih': 90000, 'Kuning': 100000, 'Orange': 100000, 'Hijau': 110000, 'Biru': 120000, 'Coklat': 130000 };
+let kasCabangData = { pengeluaran: [] };
+let eventData = { pengumuman: [] };
+let penilaianData = { tanggal: new Date().toISOString().slice(0,10), lokasi: 'Dojo Tidore', cabang: 'TIDORE', nilai: {} };
+let laporanLatihan = { komda: 'MALUT', cabang: 'TIDORE KEPULAUAN', unit: 'RQL TIDORE', pelatih: ['Senpai Rohim Puryanto'], tanggal: new Date().toISOString().slice(0,10), pukul: '16.00 - 18.00 WIT' };
+let absensiData = {};
+let unitData = {};
+let videoLatihan = [];
+let videoKata = {};
+let silabusData = {};
+let currentUser = null;
+let isPelatihMode = false;
+let pengumumanData = [];
+
+// ==================== RPP GENERATOR ====================
+const generateRPP = (sabuk) => {
+    const rpp = [];
+    for (let i = 1; i <= 18; i++) {
+        if (i <= 6) rpp.push({ minggu: i, tema: `Penguatan Teknik Dasar ${sabuk}`, materi: `Latihan kihon, kuda-kuda, pukulan, tangkisan, tendangan dasar sesuai level ${sabuk}` });
+        else if (i <= 12) rpp.push({ minggu: i, tema: `Latihan Kata & Kumite ${sabuk}`, materi: `Penguasaan kata sesuai level ${sabuk} dan latihan kumite terkontrol` });
+        else rpp.push({ minggu: i, tema: `Evaluasi & Persiapan Ujian ${sabuk}`, materi: `Review semua materi, simulasi ujian, koreksi teknik` });
+    }
+    return rpp;
+};
+
+const defaultSilabus = {
+    'Putih': { deskripsi: 'Dasar-dasar karate untuk pemula. Fokus pada kuda-kuda, pukulan dasar, tangkisan, dan pengenalan kata Taikyoku.', rpp: generateRPP('Putih') },
+    'Kuning': { deskripsi: 'Penguatan teknik dasar, pengenalan kata Gekisai dai ichi.', rpp: generateRPP('Kuning') },
+    'Orange': { deskripsi: 'Peningkatan teknik, pengenalan kata Gekisai dai ni.', rpp: generateRPP('Orange') },
+    'Hijau': { deskripsi: 'Teknik lanjutan, pengenalan kata Saifa.', rpp: generateRPP('Hijau') },
+    'Biru': { deskripsi: 'Teknik advanced, pengenalan kata Seienchin.', rpp: generateRPP('Biru') },
+    'Coklat': { deskripsi: 'Persiapan menuju sabuk hitam, kata Sanchin dan Tensho.', rpp: generateRPP('Coklat') }
+};
+silabusData = defaultSilabus;
+
+// ==================== LOADING INDICATOR ====================
+function showLoading(msg = 'Memuat...') {
+    let el = document.getElementById('loadingOverlay');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'loadingOverlay';
+        el.className = 'loading-overlay';
+        el.innerHTML = `<div class="loading-spinner">⏳ <span id="loadingMsg">${msg}</span></div>`;
+        document.body.appendChild(el);
+    }
+    document.getElementById('loadingMsg').textContent = msg;
+    el.style.display = 'flex';
+}
+function hideLoading() {
+    const el = document.getElementById('loadingOverlay');
+    if (el) el.style.display = 'none';
+}
+
+// ==================== LOAD DATA FROM SUPABASE ====================
+async function loadAllData() {
+    showLoading('Memuat data dari Supabase...');
+    try {
+        // Settings
+        const kp = await sb.getSetting('kode_pelatih');
+        if (kp) kodePelatih = kp;
+
+        const bu = await sb.getSetting('biaya_ujian');
+        if (bu) biayaUjian = JSON.parse(bu);
+
+        const ll = await sb.getSetting('laporan_latihan');
+        if (ll) laporanLatihan = JSON.parse(ll);
+
+        // Registrations
+        const regs = await sb.select('gojukai_pendaftar', 'select=*');
+        registrations = regs.map(r => ({
+            id: r.id, nama: r.nama, ttl: r.ttl, jk: r.jk,
+            pekerjaan: r.pekerjaan, alamat: r.alamat, telepon: r.telepon,
+            ortu: r.ortu, pekerjaanortu: r.pekerjaanortu, alamatortu: r.alamatortu,
+            teleponortu: r.teleponortu, unit: r.unit, sabukAwal: r.sabuk_awal,
+            foto: r.foto, tanggal: r.tanggal, username: r.username, password: r.password
+        }));
+
+        // Units
+        const units = await sb.select('gojukai_units', 'select=*');
+        unitData = {};
+        units.forEach(u => {
+            unitData[u.nama] = {
+                pelatih: Array.isArray(u.pelatih) ? u.pelatih : JSON.parse(u.pelatih || '[]'),
+                karateka: Array.isArray(u.karateka) ? u.karateka : JSON.parse(u.karateka || '[]'),
+                _id: u.id
+            };
+        });
+
+        // Iuran
+        const iuran = await sb.select('gojukai_iuran', 'select=*');
+        iuranData = iuran.map(i => ({
+            id: i.id, memberId: i.member_id, bulan: i.bulan, nominal: i.nominal,
+            status: i.status, tglBayar: i.tgl_bayar, validasiBy: i.validasi_by
+        }));
+
+        // Absensi
+        const absensi = await sb.select('gojukai_absensi', 'select=*');
+        absensiData = {};
+        absensi.forEach(a => {
+            if (!absensiData[a.tanggal]) absensiData[a.tanggal] = {};
+            if (!absensiData[a.tanggal][a.unit]) absensiData[a.tanggal][a.unit] = {};
+            absensiData[a.tanggal][a.unit][a.member_id] = a.status;
+        });
+
+        // Pengumuman
+        const pengumuman = await sb.select('gojukai_pengumuman', 'select=*');
+        pengumumanData = pengumuman;
+        eventData.pengumuman = pengumuman.map(p => p.teks);
+
+        // Penilaian
+        const penilaian = await sb.select('gojukai_penilaian', 'select=*');
+        penilaianData.nilai = {};
+        penilaian.forEach(p => {
+            if (p.tanggal) penilaianData.tanggal = p.tanggal;
+            if (p.lokasi) penilaianData.lokasi = p.lokasi;
+            if (p.cabang) penilaianData.cabang = p.cabang;
+            penilaianData.nilai[p.member_id] = typeof p.nilai === 'object' ? p.nilai : JSON.parse(p.nilai || '{}');
+        });
+
+        // Kas Pengeluaran
+        const pengeluaran = await sb.select('gojukai_kas_pengeluaran', 'select=*');
+        kasCabangData.pengeluaran = pengeluaran.map(p => ({
+            id: p.id, tanggal: p.tanggal, keterangan: p.keterangan, nominal: p.nominal
+        }));
+
+        // Files
+        const files = await sb.select('gojukai_files', 'select=*');
+        uploadedFiles = { pengurus: [], adart: [], kurikulum: [] };
+        files.forEach(f => {
+            if (uploadedFiles[f.kategori] !== undefined) {
+                uploadedFiles[f.kategori].push({ id: f.id, name: f.nama, url: f.url });
+            }
+        });
+
+        // Video latihan
+        const vl = await sb.select('gojukai_video_latihan', 'select=*');
+        videoLatihan = vl.map(v => ({ id: v.id, judul: v.judul, url: v.url }));
+
+        // Video kata
+        const vk = await sb.select('gojukai_video_kata', 'select=*');
+        videoKata = {};
+        vk.forEach(v => { videoKata[v.sabuk] = { id: v.id, judul: v.judul, url: v.url }; });
+
+        // Logo
+        const logo = await sb.getSetting('logo');
+        if (logo) updateLogoDisplay(logo);
+
+        syncKaratekaFromRegistrations();
+        updateUnitDropdown();
+        isDbConnected = true;
+        document.getElementById('dbStatusBadge').textContent = '● Online';
+        document.getElementById('dbStatusBadge').className = 'db-status online';
+        console.log('✅ Data berhasil dimuat dari Supabase');
+    } catch (err) {
+        console.error('❌ Gagal memuat data:', err);
+        isDbConnected = false;
+        document.getElementById('dbStatusBadge').textContent = '● Offline';
+        document.getElementById('dbStatusBadge').className = 'db-status offline';
+        alert('⚠️ Gagal terhubung ke Supabase: ' + err.message + '\n\nPastikan URL, Key, dan tabel sudah dikonfigurasi dengan benar.');
+    } finally {
+        hideLoading();
+    }
+}
+
+// ==================== SAVE FUNCTIONS ====================
+async function saveRegistrations(reg) {
+    // reg adalah objek satu anggota baru
+    await sb.upsert('gojukai_pendaftar', {
+        id: reg.id, nama: reg.nama, ttl: reg.ttl, jk: reg.jk,
+        pekerjaan: reg.pekerjaan, alamat: reg.alamat, telepon: reg.telepon,
+        ortu: reg.ortu, pekerjaanortu: reg.pekerjaanortu, alamatortu: reg.alamatortu,
+        teleponortu: reg.teleponortu, unit: reg.unit, sabuk_awal: reg.sabukAwal,
+        foto: reg.foto, tanggal: reg.tanggal, username: reg.username, password: reg.password
+    });
+    syncKaratekaFromRegistrations();
+    await saveUnits();
+}
+
+async function deleteRegistration(id) {
+    await sb.delete('gojukai_pendaftar', id);
+    await sb.delete('gojukai_iuran', id, 'member_id');
+    registrations = registrations.filter(r => r.id !== id);
+    syncKaratekaFromRegistrations();
+    await saveUnits();
+}
+
+async function saveUnits() {
+    for (const [nama, unit] of Object.entries(unitData)) {
+        const pelatihArr = Array.isArray(unit.pelatih) ? unit.pelatih : [];
+        const karatekaArr = Array.isArray(unit.karateka) ? unit.karateka : [];
+        await sbFetch('gojukai_units', {
+            method: 'POST',
+            body: JSON.stringify({ nama, pelatih: pelatihArr, karateka: karatekaArr }),
+            headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' }
+        });
+    }
+}
+
+async function deleteUnit(nama) {
+    const units = await sb.select('gojukai_units', `nama=eq.${encodeURIComponent(nama)}`);
+    if (units.length) await sb.delete('gojukai_units', units[0].id);
+}
+
+async function saveIuran(iuran) {
+    if (iuran.id) {
+        await sb.update('gojukai_iuran', iuran.id, {
+            status: iuran.status, tgl_bayar: iuran.tglBayar, validasi_by: iuran.validasiBy
+        });
+    } else {
+        const res = await sb.insert('gojukai_iuran', {
+            member_id: iuran.memberId, bulan: iuran.bulan, nominal: iuran.nominal,
+            status: iuran.status, tgl_bayar: iuran.tglBayar, validasi_by: iuran.validasiBy
+        });
+        if (res.length) iuran.id = res[0].id;
+    }
+}
+
+async function deleteIuran(id) {
+    await sb.delete('gojukai_iuran', id);
+    iuranData = iuranData.filter(i => i.id !== id);
+}
+
+async function saveAbsensi(tanggal, unit, memberId, status) {
+    if (status === 'Hadir') {
+        // Cek apakah sudah ada
+        const existing = await sbFetch(`gojukai_absensi?tanggal=eq.${tanggal}&unit=eq.${encodeURIComponent(unit)}&member_id=eq.${memberId}`);
+        if (existing.length) {
+            await sb.update('gojukai_absensi', existing[0].id, { status });
+        } else {
+            await sb.insert('gojukai_absensi', { tanggal, unit, member_id: memberId, status });
+        }
+        if (!absensiData[tanggal]) absensiData[tanggal] = {};
+        if (!absensiData[tanggal][unit]) absensiData[tanggal][unit] = {};
+        absensiData[tanggal][unit][memberId] = status;
+    } else {
+        // Hapus
+        const existing = await sbFetch(`gojukai_absensi?tanggal=eq.${tanggal}&unit=eq.${encodeURIComponent(unit)}&member_id=eq.${memberId}`);
+        if (existing.length) await sb.delete('gojukai_absensi', existing[0].id);
+        if (absensiData[tanggal]?.[unit]) delete absensiData[tanggal][unit][memberId];
+    }
+}
+
+async function saveEvents() {
+    // Tidak perlu save ulang semua, dikelola per item (tambah/hapus)
+    eventData.pengumuman = pengumumanData.map(p => p.teks);
+}
+
+async function addPengumuman(teks) {
+    const res = await sb.insert('gojukai_pengumuman', { teks });
+    if (res.length) {
+        pengumumanData.push(res[0]);
+        eventData.pengumuman = pengumumanData.map(p => p.teks);
+    }
+}
+
+async function deletePengumuman(id) {
+    await sb.delete('gojukai_pengumuman', id);
+    pengumumanData = pengumumanData.filter(p => p.id !== id);
+    eventData.pengumuman = pengumumanData.map(p => p.teks);
+}
+
+async function savePenilaian(memberId, nilai) {
+    const existing = await sbFetch(`gojukai_penilaian?member_id=eq.${memberId}`);
+    if (existing.length) {
+        await sb.update('gojukai_penilaian', existing[0].id, {
+            tanggal: penilaianData.tanggal, lokasi: penilaianData.lokasi,
+            cabang: penilaianData.cabang, nilai
+        });
+    } else {
+        await sb.insert('gojukai_penilaian', {
+            tanggal: penilaianData.tanggal, lokasi: penilaianData.lokasi,
+            cabang: penilaianData.cabang, member_id: memberId, nilai
+        });
+    }
+    penilaianData.nilai[memberId] = nilai;
+}
+
+async function deletePenilaian(memberId) {
+    const existing = await sbFetch(`gojukai_penilaian?member_id=eq.${memberId}`);
+    if (existing.length) await sb.delete('gojukai_penilaian', existing[0].id);
+    delete penilaianData.nilai[memberId];
+}
+
+async function saveLaporan() {
+    await sb.setSetting('laporan_latihan', laporanLatihan);
+}
+
+async function saveKasCabangPengeluaran(item) {
+    if (item.id) {
+        // update tidak diperlukan untuk kasus ini
+    } else {
+        const res = await sb.insert('gojukai_kas_pengeluaran', {
+            tanggal: item.tanggal, keterangan: item.keterangan, nominal: item.nominal
+        });
+        if (res.length) { item.id = res[0].id; kasCabangData.pengeluaran.push(item); }
+    }
+}
+
+async function deletePengeluaran(id) {
+    await sb.delete('gojukai_kas_pengeluaran', id);
+    kasCabangData.pengeluaran = kasCabangData.pengeluaran.filter(p => p.id !== id);
+}
+
+async function saveBiayaUjian() {
+    await sb.setSetting('biaya_ujian', biayaUjian);
+}
+
+async function saveKodePelatih(kode) {
+    kodePelatih = kode;
+    await sb.setSetting('kode_pelatih', kode);
+}
+
+async function saveLogo(data) {
+    await sb.setSetting('logo', data);
+}
+
+async function saveVideoLatihan() {
+    // Hapus semua, insert ulang
+    const all = await sb.select('gojukai_video_latihan', 'select=id');
+    for (const v of all) await sb.delete('gojukai_video_latihan', v.id);
+    for (const v of videoLatihan) {
+        const res = await sb.insert('gojukai_video_latihan', { judul: v.judul, url: v.url });
+        if (res.length) v.id = res[0].id;
+    }
+}
+
+async function saveVideoKata() {
+    for (const sabuk in videoKata) {
+        await sbFetch('gojukai_video_kata', {
+            method: 'POST',
+            body: JSON.stringify({ sabuk, judul: videoKata[sabuk].judul, url: videoKata[sabuk].url }),
+            headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' }
+        });
+    }
+}
+
+async function addFile(kategori, nama, url) {
+    const res = await sb.insert('gojukai_files', { kategori, nama, url });
+    if (res.length) {
+        uploadedFiles[kategori].push({ id: res[0].id, name: nama, url });
+        return true;
+    }
+    return false;
+}
+
+async function deleteFile(id, kategori) {
+    await sb.delete('gojukai_files', id);
+    uploadedFiles[kategori] = uploadedFiles[kategori].filter(f => f.id !== id);
+}
+
+// ==================== HELPER FUNCTIONS ====================
+function syncKaratekaFromRegistrations() {
+    for (let unit in unitData) unitData[unit].karateka = [];
+    registrations.forEach(reg => {
+        if (unitData[reg.unit]) {
+            unitData[reg.unit].karateka.push({ id: reg.id, nama: reg.nama, sabuk: reg.sabukAwal || 'Putih', aktif: true, ttl: reg.ttl, telepon: reg.telepon });
+        }
+    });
+}
+
+function updateUnitDropdown() {
+    const unitSelect = document.getElementById('unit');
+    if (unitSelect) unitSelect.innerHTML = Object.keys(unitData).map(u => `<option value="${u}">${u}</option>`).join('');
+}
+
+function getIuranPerUnit() {
+    let unitIuran = {};
+    for (let unit in unitData) unitIuran[unit] = 0;
+    iuranData.forEach(i => {
+        if (i.status === 'Lunas') {
+            const member = registrations.find(r => r.id === i.memberId);
+            if (member && unitIuran[member.unit] !== undefined) unitIuran[member.unit] += i.nominal;
+        }
+    });
+    return unitIuran;
+}
+
+function hitungKasCabang() {
+    const unitIuran = getIuranPerUnit();
+    let total = 0;
+    for (let unit in unitIuran) total += unitIuran[unit] * 0.2;
+    let totalPengeluaran = 0;
+    (kasCabangData.pengeluaran || []).forEach(p => totalPengeluaran += p.nominal);
+    return total - totalPengeluaran;
+}
+
+function updateLogoDisplay(logoData) {
+    const landingLogo = document.getElementById('landingLogo');
+    if (logoData && landingLogo) { landingLogo.src = logoData; landingLogo.style.display = 'block'; }
+}
+
+// ==================== SUPABASE CONNECT BUTTON ====================
+document.getElementById('saveSupabaseConfig').onclick = async () => {
+    const url = document.getElementById('sbUrl').value.trim().replace(/\/$/, '');
+    const key = document.getElementById('sbKey').value.trim();
+    if (!url || !key) { alert('Isi URL dan Key Supabase!'); return; }
+    SUPABASE_URL = url; SUPABASE_KEY = key;
+    localStorage.setItem(SB_URL_KEY, url);
+    localStorage.setItem(SB_KEY_KEY, key);
+    await loadAllData();
+};
+
+document.getElementById('testSupabaseConn').onclick = async () => {
+    const url = document.getElementById('sbUrl').value.trim().replace(/\/$/, '');
+    const key = document.getElementById('sbKey').value.trim();
+    if (!url || !key) { alert('Isi URL dan Key dulu!'); return; }
+    SUPABASE_URL = url; SUPABASE_KEY = key;
+    const el = document.getElementById('connStatus');
+    el.textContent = '⏳ Menguji...';
+    try {
+        await sbFetch('gojukai_settings?limit=1');
+        el.textContent = '✅ Berhasil terhubung!';
+        el.style.color = 'green';
+    } catch (e) {
+        el.textContent = '❌ Gagal: ' + e.message;
+        el.style.color = 'red';
+    }
+};
+
+// ==================== UI SECTIONS ====================
+const landingDiv = document.getElementById('landingSection');
+const formDiv = document.getElementById('formSection');
+const loginPanelDiv = document.getElementById('loginPanel');
+const memberContainer = document.getElementById('memberAreaContainer');
+const adminPanel = document.getElementById('adminPanelContainer');
+const pelatihLoginPanel = document.getElementById('pelatihLoginPanel');
+const pelatihContentArea = document.getElementById('pelatihContentArea');
+const publicToolbarDiv = document.getElementById('publicToolbar');
+const darkBtn = document.getElementById('darkModeToggle');
+const showRegBtn = document.getElementById('showRegisterBtn');
+const showLoginBtn = document.getElementById('showLoginBtn');
+const showPelatihBtn = document.getElementById('showPelatihBtn');
+const adminLoginBtn = document.getElementById('adminLoginBtn');
+const landingDaftar = document.getElementById('landingDaftarBtn');
+const fotoInput = document.getElementById('fotoUpload');
+const fotoPreview = document.getElementById('fotoPreview');
+const backFromPelatih = document.getElementById('backFromPelatih');
+const submitPelatihLogin = document.getElementById('submitPelatihLogin');
+const logoutPelatihBtn = document.getElementById('logoutPelatihBtn');
+
+function hideAllSections() {
+    [landingDiv, formDiv, loginPanelDiv, memberContainer, adminPanel, pelatihLoginPanel, pelatihContentArea].forEach(el => el.classList.add('hidden'));
+}
+function showPublicToolbar(show) { show ? publicToolbarDiv.classList.remove('hidden') : publicToolbarDiv.classList.add('hidden'); }
+
+if (localStorage.getItem('darkMode') === 'enabled') document.body.classList.add('dark');
+darkBtn.onclick = () => { document.body.classList.toggle('dark'); localStorage.setItem('darkMode', document.body.classList.contains('dark') ? 'enabled' : 'disabled'); };
+
+showRegBtn.onclick = () => { updateUnitDropdown(); hideAllSections(); formDiv.classList.remove('hidden'); showPublicToolbar(true); };
+landingDaftar.onclick = () => { updateUnitDropdown(); hideAllSections(); formDiv.classList.remove('hidden'); showPublicToolbar(true); };
+showLoginBtn.onclick = () => { hideAllSections(); loginPanelDiv.classList.remove('hidden'); showPublicToolbar(true); };
+document.getElementById('backToLanding').addEventListener('click', () => { hideAllSections(); landingDiv.classList.remove('hidden'); showPublicToolbar(true); });
+document.getElementById('backToLanding2').addEventListener('click', () => { hideAllSections(); landingDiv.classList.remove('hidden'); showPublicToolbar(true); });
+showPelatihBtn.onclick = () => { hideAllSections(); pelatihLoginPanel.classList.remove('hidden'); showPublicToolbar(true); };
+backFromPelatih.addEventListener('click', () => { hideAllSections(); landingDiv.classList.remove('hidden'); showPublicToolbar(true); });
+
+submitPelatihLogin.onclick = () => {
+    const kode = document.getElementById('kodePelatihInput').value;
+    if (kode === kodePelatih) {
+        isPelatihMode = true;
+        hideAllSections();
+        pelatihContentArea.classList.remove('hidden');
+        showPublicToolbar(false);
+        showPelatihContent('silabus');
+    } else alert('Kode pelatih salah!');
+};
+
+logoutPelatihBtn.onclick = () => {
+    isPelatihMode = false;
+    hideAllSections();
+    landingDiv.classList.remove('hidden');
+    showPublicToolbar(true);
+    document.getElementById('kodePelatihInput').value = '';
+};
+
+fotoInput.addEventListener('change', (e) => {
+    if (e.target.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (ev) => { fotoPreview.src = ev.target.result; fotoPreview.style.display = 'block'; };
+        reader.readAsDataURL(e.target.files[0]);
+    } else fotoPreview.style.display = 'none';
+});
+
+// ==================== REGISTRASI ====================
+document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!isDbConnected) { alert('Hubungkan ke Supabase terlebih dahulu!'); return; }
+    const getVal = (id) => document.getElementById(id).value;
+    const username = getVal('username');
+    const password = getVal('password');
+    if (registrations.some(r => r.username === username)) {
+        document.getElementById('formMessage').innerHTML = '❌ Username sudah terdaftar!';
+        return;
+    }
+    const selectedUnit = getVal('unit');
+    const sabukAwal = getVal('sabukAwal');
+    const data = {
+        id: Date.now(), nama: getVal('nama'), ttl: getVal('ttl'), jk: getVal('jk'),
+        pekerjaan: getVal('pekerjaan'), alamat: getVal('alamat'), telepon: getVal('telepon'),
+        ortu: getVal('ortu'), pekerjaanortu: getVal('pekerjaanortu'), alamatortu: getVal('alamatortu'),
+        teleponortu: getVal('teleponortu'), unit: selectedUnit, sabukAwal, foto: '',
+        tanggal: new Date().toLocaleString(), username, password
+    };
+    const simpan = async (foto64) => {
+        data.foto = foto64;
+        showLoading('Menyimpan data...');
+        try {
+            await saveRegistrations(data);
+            registrations.push(data);
+            if (!unitData[selectedUnit]) unitData[selectedUnit] = { pelatih: [], karateka: [] };
+            syncKaratekaFromRegistrations();
+            await saveUnits();
+            document.getElementById('formMessage').innerHTML = `✅ Pendaftaran berhasil!<br>Username: ${username}<br>Password: ${password}<br>Unit: ${selectedUnit} | Sabuk: ${sabukAwal}`;
+            document.getElementById('registrationForm').reset();
+            fotoPreview.style.display = 'none';
+        } catch (err) {
+            document.getElementById('formMessage').innerHTML = '❌ Gagal menyimpan: ' + err.message;
+        } finally {
+            hideLoading();
+        }
+    };
+    if (fotoInput.files.length) {
+        const fr = new FileReader();
+        fr.onload = (e2) => simpan(e2.target.result);
+        fr.readAsDataURL(fotoInput.files[0]);
+    } else simpan('');
+});
+
+// ==================== LOGIN PESERTA ====================
+document.getElementById('doLogin').addEventListener('click', () => {
+    const user = document.getElementById('loginUser').value;
+    const pass = document.getElementById('loginPass').value;
+    const member = registrations.find(r => r.username === user && r.password === pass);
+    if (member) {
+        currentUser = { role: 'member', nama: member.nama, unit: member.unit, id: member.id, username: member.username, sabuk: member.sabukAwal };
+        hideAllSections(); memberContainer.classList.remove('hidden'); showPublicToolbar(false);
+        buildMemberMenu(); showMemberContent('pengurus');
+    } else alert('Username/password salah!');
+});
+
+document.getElementById('logoutBtnMember').addEventListener('click', () => {
+    currentUser = null; memberContainer.classList.add('hidden'); hideAllSections(); landingDiv.classList.remove('hidden'); showPublicToolbar(true);
+});
+
+// ==================== LOGIN ADMIN ====================
+adminLoginBtn.onclick = () => {
+    const modal = document.createElement('div'); modal.className = 'modal';
+    modal.innerHTML = `<div class="modal-content"><h3>🔐 Login Admin</h3><input type="password" id="adminPasswordInput" placeholder="Password Admin" style="margin:15px 0"><div style="display:flex; gap:10px;"><button id="submitAdminLogin" class="btn">Login</button><button id="cancelAdminLogin" class="btn-outline">Batal</button></div></div>`;
+    document.body.appendChild(modal);
+    document.getElementById('submitAdminLogin').onclick = () => {
+        if (document.getElementById('adminPasswordInput').value === 'admin123') {
+            modal.remove(); hideAllSections(); adminPanel.classList.remove('hidden'); showPublicToolbar(false);
+            syncKaratekaFromRegistrations(); buildAdminMenu(); showAdminPanel('pengurus');
+        } else alert('Password admin salah!');
+    };
+    document.getElementById('cancelAdminLogin').onclick = () => modal.remove();
+};
+document.getElementById('logoutAdminBtn').addEventListener('click', () => {
+    adminPanel.classList.add('hidden'); hideAllSections(); landingDiv.classList.remove('hidden'); showPublicToolbar(true); currentUser = null;
+});
+
+// ==================== ZONA PELATIH CONTENT ====================
+function showPelatihContent(menuId) {
+    const contentDiv = document.getElementById('pelatihContent');
+    if (menuId === 'silabus') {
+        let html = `<h3>📚 Silabus Latihan & RPP per Tingkatan Sabuk</h3>
+            <p><strong>Periode:</strong> Semester Ganjil 2025 | <strong>Frekuensi:</strong> 2x/minggu | <strong>Durasi:</strong> 120 menit</p>
+            <p><strong>Total Pertemuan:</strong> 36 kali latihan per semester (18 minggu x 2)</p>
+            <div class="tab-buttons" id="silabusSabukTabs">${Object.keys(silabusData).map(s => `<button class="sabuk-tab" data-sabuk="${s}">${s}</button>`).join('')}</div>`;
+        for (let sabuk in silabusData) {
+            let rppHtml = '<div class="table-wrapper"><table style="width:100%"><thead><th style="background:#2c3e66; color:white;">Minggu</th><th style="background:#2c3e66; color:white;">Tema</th><th style="background:#2c3e66; color:white;">Materi Latihan</th></thead><tbody>';
+            (silabusData[sabuk].rpp || []).forEach(r => { rppHtml += `<tr><td style="text-align:center;">${r.minggu}</td><td><strong>${r.tema}</strong></td><td>${r.materi}</td></tr>`; });
+            rppHtml += '</tbody></table></div>';
+            html += `<div id="silabus-${sabuk}" class="sabuk-content"><div class="rpp-card"><h4>📌 ${sabuk}</h4><p><strong>Deskripsi:</strong> ${silabusData[sabuk].deskripsi}</p>${rppHtml}</div></div>`;
+        }
+        contentDiv.innerHTML = html;
+        const first = Object.keys(silabusData)[0];
+        document.getElementById(`silabus-${first}`)?.classList.add('active');
+        document.querySelectorAll('#silabusSabukTabs .sabuk-tab').forEach(tab => {
+            if (tab.dataset.sabuk === first) tab.classList.add('active');
+            tab.onclick = () => {
+                document.querySelectorAll('#silabusSabukTabs .sabuk-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                document.querySelectorAll('[id^="silabus-"]').forEach(c => c.classList.remove('active'));
+                document.getElementById(`silabus-${tab.dataset.sabuk}`).classList.add('active');
+            };
+        });
+    } else if (menuId === 'video') {
+        let html = `<h3>🎬 Video Gerakan Latihan Dasar</h3><div class="grid-2">`;
+        videoLatihan.forEach(v => { html += `<div class="video-card"><h4>📹 ${v.judul}</h4><div class="video-container"><iframe src="${v.url}" frameborder="0" allowfullscreen></iframe></div></div>`; });
+        html += `</div>`;
+        contentDiv.innerHTML = html;
+    } else if (menuId === 'kata') {
+        let html = `<h3>🥋 Video Jurus (Kata) per Tingkatan Sabuk</h3><div class="tab-buttons" id="kataSabukTabs">${Object.keys(videoKata).map(s => `<button class="sabuk-tab" data-sabuk="${s}">${s}</button>`).join('')}</div>`;
+        for (let sabuk in videoKata) {
+            html += `<div id="kata-${sabuk}" class="sabuk-content"><div class="video-card"><h4>📹 ${videoKata[sabuk].judul}</h4><div class="video-container"><iframe src="${videoKata[sabuk].url}" frameborder="0" allowfullscreen></iframe></div></div></div>`;
+        }
+        contentDiv.innerHTML = html;
+        const first = Object.keys(videoKata)[0];
+        if (first) document.getElementById(`kata-${first}`)?.classList.add('active');
+        document.querySelectorAll('#kataSabukTabs .sabuk-tab').forEach(tab => {
+            if (tab.dataset.sabuk === first) tab.classList.add('active');
+            tab.onclick = () => {
+                document.querySelectorAll('#kataSabukTabs .sabuk-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                document.querySelectorAll('[id^="kata-"]').forEach(c => c.classList.remove('active'));
+                document.getElementById(`kata-${tab.dataset.sabuk}`).classList.add('active');
+            };
+        });
+    }
+}
+
+document.getElementById('pelatihMenuNav').addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (btn && btn.dataset.menu) showPelatihContent(btn.dataset.menu);
+});
+
+// ==================== MEMBER AREA ====================
+function buildMemberMenu() {
+    document.getElementById('memberMenuNav').innerHTML = `
+        <button data-menu="pengurus">📌 Pengurus</button>
+        <button data-menu="adart">📜 AD/ART</button>
+        <button data-menu="kurikulum">📚 Kurikulum</button>
+        <button data-menu="agenda">📅 Agenda & Info</button>
+        <button data-menu="laporan">📄 Laporan Latihan</button>
+        <button data-menu="unit">🥋 Unit Saya</button>
+        <button data-menu="absensi">📋 Absensi Saya</button>
+        <button data-menu="iuran">💰 Iuran Saya</button>
+    `;
+    document.querySelectorAll('#memberMenuNav button').forEach(btn => {
+        btn.addEventListener('click', () => showMemberContent(btn.dataset.menu));
+    });
+}
+
+function showMemberContent(menuId) {
+    const contentDiv = document.getElementById('memberContent');
+    if (menuId === 'pengurus') {
+        let html = '<h3>📌 Pengurus Cabang Tidore</h3>';
+        if (uploadedFiles.pengurus.length) uploadedFiles.pengurus.forEach(f => html += `<p><a href="${f.url}" target="_blank">📄 ${f.name}</a></p>`);
+        else html += '<p>Belum ada file.</p>';
+        contentDiv.innerHTML = html;
+    } else if (menuId === 'adart') {
+        let html = '<h3>📜 AD/ART Gojukai</h3>';
+        if (uploadedFiles.adart.length) uploadedFiles.adart.forEach(f => html += `<p><a href="${f.url}" target="_blank">📄 ${f.name}</a></p>`);
+        else html += '<p>Belum ada file.</p>';
+        contentDiv.innerHTML = html;
+    } else if (menuId === 'kurikulum') {
+        let html = '<h3>📚 Kurikulum Latihan</h3>';
+        if (uploadedFiles.kurikulum.length) uploadedFiles.kurikulum.forEach(f => html += `<p><a href="${f.url}" target="_blank">📄 ${f.name}</a></p>`);
+        else html += '<p>Belum ada file.</p>';
+        contentDiv.innerHTML = html;
+    } else if (menuId === 'agenda') {
+        let html = `<h3>📅 Pengumuman & Informasi</h3>`;
+        eventData.pengumuman.forEach(p => { html += `<div class="pengumuman-item">📢 ${p}</div>`; });
+        contentDiv.innerHTML = html;
+    } else if (menuId === 'laporan') {
+        let totalHadir = 0;
+        if (absensiData[laporanLatihan.tanggal]) {
+            for (let unit in absensiData[laporanLatihan.tanggal]) {
+                totalHadir += Object.values(absensiData[laporanLatihan.tanggal][unit]).filter(v => v === 'Hadir').length;
+            }
+        }
+        const tanggalFormatted = new Date(laporanLatihan.tanggal).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        contentDiv.innerHTML = `<h3>📄 Laporan Latihan Terbaru</h3>
+            <div class="laporan-card" style="text-align:center;">
+                <strong style="font-size:1.2rem;">LAPORAN LATIHAN KARATE-DO GOJUKAI INDONESIA</strong><br><br>
+                <strong>KOMDA :</strong> ${laporanLatihan.komda}<br>
+                <strong>CABANG :</strong> ${laporanLatihan.cabang}<br>
+                <strong>UNIT :</strong> ${laporanLatihan.unit}<br><br>
+                <strong>PELATIH :</strong><br>${laporanLatihan.pelatih.map(p => `&nbsp;&nbsp;${p}`).join('<br>')}<br><br>
+                <strong>Jumlah Peserta :</strong> ${totalHadir} karateka<br>
+                <strong>Hari, Tanggal :</strong> ${tanggalFormatted}<br>
+                <strong>Pukul :</strong> ${laporanLatihan.pukul}<br><br>
+                <strong>ONEGAISHIMASU 🙏</strong>
+            </div>`;
+    } else if (menuId === 'unit') {
+        const memberUnit = currentUser?.unit || 'Tidore Pusat';
+        const unit = unitData[memberUnit];
+        if (unit) {
+            contentDiv.innerHTML = `<h3>🥋 Unit ${memberUnit}</h3>
+                <h4>📌 Pelatih:</h4><ul>${unit.pelatih.map(p => `<li>${p}</li>`).join('')}</ul>
+                <h4>🥋 Karateka Aktif:</h4><ul>${unit.karateka.filter(k => k.aktif).map(k => `<li>${k.nama} (Sabuk ${k.sabuk})</li>`).join('')}</ul>`;
+        } else contentDiv.innerHTML = `<h3>Unit ${memberUnit}</h3><p>Belum ada data.</p>`;
+    } else if (menuId === 'absensi') {
+        let html = `<h3>📋 Riwayat Absensi Saya</h3><div class="table-wrapper"><table><thead><th>Tanggal Latihan</th><th>Status</th></thead><tbody>`;
+        let myAbsensi = [];
+        for (let tgl in absensiData) {
+            for (let unit in absensiData[tgl]) {
+                if (absensiData[tgl][unit][currentUser?.id]) myAbsensi.push({ tgl, status: absensiData[tgl][unit][currentUser?.id] });
+            }
+        }
+        myAbsensi.sort((a, b) => new Date(b.tgl) - new Date(a.tgl));
+        if (myAbsensi.length === 0) html += '<tr><td colspan="2">Belum ada data absensi</td></tr>';
+        myAbsensi.forEach(a => { html += `<tr><td>${new Date(a.tgl).toLocaleDateString('id-ID')}</td><td class="${a.status === 'Hadir' ? 'status-lunas' : 'status-belum'}">${a.status}</td></tr>`; });
+        html += `</tbody></table></div>`;
+        contentDiv.innerHTML = html;
+    } else if (menuId === 'iuran') {
+        const memberIuran = iuranData.filter(i => i.memberId === currentUser?.id);
+        let html = `<h3>💰 Riwayat Iuran Saya</h3><div class="table-wrapper"><table><thead><th>Bulan</th><th>Nominal</th><th>Status</th><th>Tgl Validasi</th></thead><tbody>`;
+        if (memberIuran.length === 0) html += '<tr><td colspan="4">Belum ada data iuran</td></tr>';
+        memberIuran.forEach(i => { html += `<tr><td>${i.bulan}</td><td>Rp ${i.nominal.toLocaleString()}</td><td class="${i.status === 'Lunas' ? 'status-lunas' : 'status-belum'}">${i.status}</td><td>${i.tglBayar || '-'}</td></tr>`; });
+        html += `</tbody></table></div><p>📌 Iuran per bulan: Rp 100.000</p>`;
+        contentDiv.innerHTML = html;
+    }
+}
+
+// ==================== ADMIN PANEL ====================
+function buildAdminMenu() {
+    document.getElementById('adminMenuNav').innerHTML = `
+        <button data-section="logo">🖼️ Logo</button>
+        <button data-section="pengurus">📌 Pengurus</button>
+        <button data-section="adart">📜 AD/ART</button>
+        <button data-section="kurikulum">📚 Kurikulum</button>
+        <button data-section="event">📅 Event</button>
+        <button data-section="penilaian">📝 Penilaian Kyu</button>
+        <button data-section="ijazah">🎓 Usulan Ijazah</button>
+        <button data-section="laporan">📄 Laporan Latihan</button>
+        <button data-section="keuangan">💰 Keuangan</button>
+        <button data-section="biaya">💵 Biaya Ujian</button>
+        <button data-section="unit">🥋 Unit</button>
+        <button data-section="iuran">💸 Iuran</button>
+        <button data-section="pendaftar">📋 Pendaftar</button>
+        <button data-section="pelatih">🔑 Zona Pelatih</button>
+    `;
+    document.querySelectorAll('#adminMenuNav button').forEach(btn => {
+        btn.addEventListener('click', () => showAdminPanel(btn.dataset.section));
+    });
+}
+
+function showPreview(title, content, downloadFn) {
+    const modal = document.createElement('div');
+    modal.className = 'preview-modal';
+    modal.innerHTML = `<div class="preview-content"><div style="display:flex; justify-content:space-between; margin-bottom:15px;"><h3>${title}</h3><button id="closePreview" style="background:#b91c1c;">✖ Tutup</button></div><div id="previewBody">${content}</div><div style="margin-top:15px; display:flex; gap:10px;"><button id="downloadPreview" class="btn-success">📥 Download</button><button id="closePreviewBtn" class="btn-outline">Tutup</button></div></div>`;
+    document.body.appendChild(modal);
+    document.getElementById('closePreview').onclick = () => modal.remove();
+    document.getElementById('closePreviewBtn').onclick = () => modal.remove();
+    document.getElementById('downloadPreview').onclick = () => { if (downloadFn) downloadFn(); modal.remove(); };
+}
+
+function showAdminPanel(section) {
+    const panel = document.getElementById('adminPanelContent');
+
+    if (section === 'logo') {
+        panel.innerHTML = `<h3>🖼️ Upload Logo</h3><div class="upload-area"><input type="file" id="logoUpload"><button id="uploadLogoBtn" class="btn-success">Upload</button></div>`;
+        document.getElementById('uploadLogoBtn').onclick = async () => {
+            const file = document.getElementById('logoUpload').files[0];
+            if (!file) { alert('Pilih file!'); return; }
+            showLoading('Mengupload logo...');
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    await saveLogo(e.target.result);
+                    updateLogoDisplay(e.target.result);
+                    alert('Logo berhasil diupload!');
+                } catch (err) {
+                    alert('Gagal: ' + err.message);
+                } finally { hideLoading(); }
+            };
+            reader.readAsDataURL(file);
+        };
+    } else if (section === 'pengurus') {
+        panel.innerHTML = `<h3>📌 Kelola File Pengurus</h3><div class="upload-area"><input type="file" id="uploadFilePengurus"><button id="uploadBtnPengurus" class="btn-success">Upload</button></div><h4>File Tersimpan</h4><div id="fileListPengurus"></div>`;
+        refreshFileList('pengurus', 'fileListPengurus');
+        document.getElementById('uploadBtnPengurus').addEventListener('click', () => uploadFile('pengurus', 'uploadFilePengurus', 'fileListPengurus'));
+    } else if (section === 'adart') {
+        panel.innerHTML = `<h3>📜 Kelola File AD/ART</h3><div class="upload-area"><input type="file" id="uploadFileAdart"><button id="uploadBtnAdart" class="btn-success">Upload</button></div><h4>File Tersimpan</h4><div id="fileListAdart"></div>`;
+        refreshFileList('adart', 'fileListAdart');
+        document.getElementById('uploadBtnAdart').addEventListener('click', () => uploadFile('adart', 'uploadFileAdart', 'fileListAdart'));
+    } else if (section === 'kurikulum') {
+        panel.innerHTML = `<h3>📚 Kelola File Kurikulum</h3><div class="upload-area"><input type="file" id="uploadFileKurikulum"><button id="uploadBtnKurikulum" class="btn-success">Upload</button></div><h4>File Tersimpan</h4><div id="fileListKurikulum"></div>`;
+        refreshFileList('kurikulum', 'fileListKurikulum');
+        document.getElementById('uploadBtnKurikulum').addEventListener('click', () => uploadFile('kurikulum', 'uploadFileKurikulum', 'fileListKurikulum'));
+    } else if (section === 'event') {
+        panel.innerHTML = `<h3>📅 Kelola Pengumuman</h3><div><input type="text" id="newPengumuman" placeholder="Pengumuman baru..."><button id="addPengumumanBtn" class="btn-success">➕ Tambah</button></div><h4>Daftar Pengumuman</h4><div id="pengumumanList"></div>`;
+        function renderPengumuman() {
+            const container = document.getElementById('pengumumanList');
+            if (pengumumanData.length === 0) { container.innerHTML = '<p>Belum ada pengumuman.</p>'; return; }
+            let html = '';
+            pengumumanData.forEach(p => { html += `<div class="event-card"><span>📢 ${p.teks}</span><button class="hapusPengumuman" data-id="${p.id}" style="background:#b91c1c;">Hapus</button></div>`; });
+            container.innerHTML = html;
+            document.querySelectorAll('.hapusPengumuman').forEach(btn => {
+                btn.onclick = async () => {
+                    showLoading('Menghapus...');
+                    try { await deletePengumuman(parseInt(btn.dataset.id)); renderPengumuman(); }
+                    catch (e) { alert('Gagal: ' + e.message); }
+                    finally { hideLoading(); }
+                };
+            });
+        }
+        document.getElementById('addPengumumanBtn').onclick = async () => {
+            const txt = document.getElementById('newPengumuman').value.trim();
+            if (!txt) return;
+            showLoading('Menyimpan...');
+            try { await addPengumuman(txt); renderPengumuman(); document.getElementById('newPengumuman').value = ''; }
+            catch (e) { alert('Gagal: ' + e.message); }
+            finally { hideLoading(); }
+        };
+        renderPengumuman();
+    } else if (section === 'penilaian') {
+        let html = `<div style="text-align:center; margin-bottom:20px;">
+            <h2>KARATE-DO GOJUKAI INDONESIA</h2><h3>KOMISARIAT DAERAH MALUT</h3>
+            <div class="grid-2" style="margin-top:15px;">
+                <div><strong>CABANG :</strong> <input type="text" id="cabangPenilaian" value="${penilaianData.cabang || 'TIDORE'}"></div>
+                <div><strong>LOKASI :</strong> <input type="text" id="lokasiPenilaian" value="${penilaianData.lokasi}"></div>
+                <div><strong>TANGGAL UJIAN :</strong> <input type="date" id="tglUjianPenilaian" value="${penilaianData.tanggal}"></div>
+            </div></div>
+            <div class="table-wrapper">
+            <table id="tabelPenilaianKyu" style="min-width:1200px; font-size:12px;"><thead>
+                <tr style="background:#2c3e66; color:white; text-align:center;">
+                    <th rowspan="2">NO</th><th rowspan="2">NAMA LENGKAP</th><th rowspan="2">KYU</th><th rowspan="2">UNIT</th>
+                    <th colspan="2">TACHI DACHI</th><th colspan="2">JUPPO</th><th colspan="2">KIHON WAZA</th>
+                    <th colspan="2">KIHON IDO</th><th colspan="2">SHIHO IDO</th><th colspan="2">YAKUSOKU</th>
+                    <th rowspan="2">KATA</th><th rowspan="2">BUNKAI</th><th rowspan="2">KUMITE</th><th rowspan="2">TEORI</th><th rowspan="2">REKOM</th>
+                </tr>
+                <tr style="background:#2c3e66; color:white;"><th>1</th><th>2</th><th>1</th><th>2</th><th>1</th><th>2</th><th>1</th><th>2</th><th>1</th><th>2</th><th>1</th><th>2</th></tr>
+            </thead><tbody>`;
+        registrations.forEach((reg, idx) => {
+            const nilai = penilaianData.nilai[reg.id] || { tachi1:70,tachi2:70,juppo1:70,juppo2:70,kihon1:70,kihon2:70,kihonIdo1:70,kihonIdo2:70,shihoIdo1:70,shihoIdo2:70,yakusoku1:70,yakusoku2:70,kata:70,bunkai:70,kumite:70,teori:70,rekom:'C' };
+            html += `<tr>
+                <td style="text-align:center;"><input type="checkbox" class="pilihPesertaPenilaian" data-id="${reg.id}"><br>${idx+1}</td>
+                <td><input type="text" class="namaPenilaian" data-id="${reg.id}" value="${reg.nama}" style="width:150px;"></td>
+                <td style="text-align:center;"><input type="text" class="kyuPenilaian" data-id="${reg.id}" value="${reg.sabukAwal==='Putih'?10:reg.sabukAwal==='Kuning'?9:reg.sabukAwal==='Orange'?8:reg.sabukAwal==='Hijau'?7:reg.sabukAwal==='Biru'?5:3}" style="width:50px;"></td>
+                <td><input type="text" class="unitPenilaian" data-id="${reg.id}" value="${reg.unit}" style="width:100px;"></td>
+                <td><input type="number" class="nilai-tachi1" data-id="${reg.id}" value="${nilai.tachi1}" style="width:50px;"></td>
+                <td><input type="number" class="nilai-tachi2" data-id="${reg.id}" value="${nilai.tachi2}" style="width:50px;"></td>
+                <td><input type="number" class="nilai-juppo1" data-id="${reg.id}" value="${nilai.juppo1}" style="width:50px;"></td>
+                <td><input type="number" class="nilai-juppo2" data-id="${reg.id}" value="${nilai.juppo2}" style="width:50px;"></td>
+                <td><input type="number" class="nilai-kihon1" data-id="${reg.id}" value="${nilai.kihon1}" style="width:50px;"></td>
+                <td><input type="number" class="nilai-kihon2" data-id="${reg.id}" value="${nilai.kihon2}" style="width:50px;"></td>
+                <td><input type="number" class="nilai-kihonIdo1" data-id="${reg.id}" value="${nilai.kihonIdo1}" style="width:50px;"></td>
+                <td><input type="number" class="nilai-kihonIdo2" data-id="${reg.id}" value="${nilai.kihonIdo2}" style="width:50px;"></td>
+                <td><input type="number" class="nilai-shihoIdo1" data-id="${reg.id}" value="${nilai.shihoIdo1}" style="width:50px;"></td>
+                <td><input type="number" class="nilai-shihoIdo2" data-id="${reg.id}" value="${nilai.shihoIdo2}" style="width:50px;"></td>
+                <td><input type="number" class="nilai-yakusoku1" data-id="${reg.id}" value="${nilai.yakusoku1}" style="width:50px;"></td>
+                <td><input type="number" class="nilai-yakusoku2" data-id="${reg.id}" value="${nilai.yakusoku2}" style="width:50px;"></td>
+                <td><input type="number" class="nilai-kata" data-id="${reg.id}" value="${nilai.kata}" style="width:50px;"></td>
+                <td><input type="number" class="nilai-bunkai" data-id="${reg.id}" value="${nilai.bunkai}" style="width:50px;"></td>
+                <td><input type="number" class="nilai-kumite" data-id="${reg.id}" value="${nilai.kumite}" style="width:50px;"></td>
+                <td><input type="number" class="nilai-teori" data-id="${reg.id}" value="${nilai.teori}" style="width:50px;"></td>
+                <td><input type="text" class="rekomPenilaian" data-id="${reg.id}" value="${nilai.rekom}" style="width:50px;"></td>
+            </tr>`;
+        });
+        html += `</tbody></table></div><div style="margin-top:20px;"><button id="simpanPenilaianBtn" class="btn-success">💾 Simpan</button><button id="downloadPenilaianExcel" class="btn">📥 Download Excel</button></div>`;
+        panel.innerHTML = html;
+
+        document.getElementById('simpanPenilaianBtn').onclick = async () => {
+            penilaianData.tanggal = document.getElementById('tglUjianPenilaian').value;
+            penilaianData.lokasi = document.getElementById('lokasiPenilaian').value;
+            penilaianData.cabang = document.getElementById('cabangPenilaian').value;
+            showLoading('Menyimpan penilaian...');
+            try {
+                for (const cb of document.querySelectorAll('.pilihPesertaPenilaian')) {
+                    const id = parseInt(cb.dataset.id);
+                    if (cb.checked) {
+                        const nilai = {
+                            tachi1: parseInt(document.querySelector(`.nilai-tachi1[data-id="${id}"]`).value)||0,
+                            tachi2: parseInt(document.querySelector(`.nilai-tachi2[data-id="${id}"]`).value)||0,
+                            juppo1: parseInt(document.querySelector(`.nilai-juppo1[data-id="${id}"]`).value)||0,
+                            juppo2: parseInt(document.querySelector(`.nilai-juppo2[data-id="${id}"]`).value)||0,
+                            kihon1: parseInt(document.querySelector(`.nilai-kihon1[data-id="${id}"]`).value)||0,
+                            kihon2: parseInt(document.querySelector(`.nilai-kihon2[data-id="${id}"]`).value)||0,
+                            kihonIdo1: parseInt(document.querySelector(`.nilai-kihonIdo1[data-id="${id}"]`).value)||0,
+                            kihonIdo2: parseInt(document.querySelector(`.nilai-kihonIdo2[data-id="${id}"]`).value)||0,
+                            shihoIdo1: parseInt(document.querySelector(`.nilai-shihoIdo1[data-id="${id}"]`).value)||0,
+                            shihoIdo2: parseInt(document.querySelector(`.nilai-shihoIdo2[data-id="${id}"]`).value)||0,
+                            yakusoku1: parseInt(document.querySelector(`.nilai-yakusoku1[data-id="${id}"]`).value)||0,
+                            yakusoku2: parseInt(document.querySelector(`.nilai-yakusoku2[data-id="${id}"]`).value)||0,
+                            kata: parseInt(document.querySelector(`.nilai-kata[data-id="${id}"]`).value)||0,
+                            bunkai: parseInt(document.querySelector(`.nilai-bunkai[data-id="${id}"]`).value)||0,
+                            kumite: parseInt(document.querySelector(`.nilai-kumite[data-id="${id}"]`).value)||0,
+                            teori: parseInt(document.querySelector(`.nilai-teori[data-id="${id}"]`).value)||0,
+                            rekom: document.querySelector(`.rekomPenilaian[data-id="${id}"]`).value||'C'
+                        };
+                        await savePenilaian(id, nilai);
+                    } else {
+                        await deletePenilaian(id);
+                    }
+                }
+                alert('Penilaian disimpan!');
+            } catch (e) { alert('Gagal: ' + e.message); }
+            finally { hideLoading(); }
+        };
+
+        document.getElementById('downloadPenilaianExcel').onclick = () => {
+            const tgl = document.getElementById('tglUjianPenilaian').value;
+            const tglFormatted = new Date(tgl).toLocaleDateString('id-ID', { year:'numeric', month:'long', day:'numeric' });
+            const cabang = document.getElementById('cabangPenilaian').value;
+            let excelRows = [['KARATE-DO GOJUKAI INDONESIA'],['KOMISARIAT DAERAH MALUT'],[`CABANG : ${cabang}`],[`Tanggal Ujian : ${tglFormatted}`],[]];
+            excelRows.push(['NO','NAMA LENGKAP','KYU','UNIT','TACHI 1','TACHI 2','JUPPO 1','JUPPO 2','KIHON 1','KIHON 2','KIHON IDO 1','KIHON IDO 2','SHIHO IDO 1','SHIHO IDO 2','YAKUSOKU 1','YAKUSOKU 2','KATA','BUNKAI','KUMITE','TEORI','REKOM']);
+            let no = 1;
+            document.querySelectorAll('.pilihPesertaPenilaian').forEach(cb => {
+                if (cb.checked) {
+                    const id = parseInt(cb.dataset.id);
+                    excelRows.push([no++,
+                        document.querySelector(`.namaPenilaian[data-id="${id}"]`).value,
+                        document.querySelector(`.kyuPenilaian[data-id="${id}"]`).value,
+                        document.querySelector(`.unitPenilaian[data-id="${id}"]`).value,
+                        document.querySelector(`.nilai-tachi1[data-id="${id}"]`).value,
+                        document.querySelector(`.nilai-tachi2[data-id="${id}"]`).value,
+                        document.querySelector(`.nilai-juppo1[data-id="${id}"]`).value,
+                        document.querySelector(`.nilai-juppo2[data-id="${id}"]`).value,
+                        document.querySelector(`.nilai-kihon1[data-id="${id}"]`).value,
+                        document.querySelector(`.nilai-kihon2[data-id="${id}"]`).value,
+                        document.querySelector(`.nilai-kihonIdo1[data-id="${id}"]`).value,
+                        document.querySelector(`.nilai-kihonIdo2[data-id="${id}"]`).value,
+                        document.querySelector(`.nilai-shihoIdo1[data-id="${id}"]`).value,
+                        document.querySelector(`.nilai-shihoIdo2[data-id="${id}"]`).value,
+                        document.querySelector(`.nilai-yakusoku1[data-id="${id}"]`).value,
+                        document.querySelector(`.nilai-yakusoku2[data-id="${id}"]`).value,
+                        document.querySelector(`.nilai-kata[data-id="${id}"]`).value,
+                        document.querySelector(`.nilai-bunkai[data-id="${id}"]`).value,
+                        document.querySelector(`.nilai-kumite[data-id="${id}"]`).value,
+                        document.querySelector(`.nilai-teori[data-id="${id}"]`).value,
+                        document.querySelector(`.rekomPenilaian[data-id="${id}"]`).value]);
+                }
+            });
+            const ws = XLSX.utils.aoa_to_sheet(excelRows);
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Penilaian Kyu');
+            XLSX.writeFile(wb, `Penilaian_Ujian_Kyu_${tgl}.xlsx`);
+        };
+
+    } else if (section === 'ijazah') {
+        let html = `<h3>🎓 Usulan Ijazah Kenaikan Kyu</h3>
+            <div class="grid-2"><div><label>Tanggal Ujian</label><input type="date" id="tglIjazah" value="${penilaianData.tanggal}"></div>
+            <div><label>CABANG</label><input type="text" id="cabangIjazah" value="TIDORE KEPULAUAN"></div></div>
+            <div class="table-wrapper"><table id="tabelIjazah"><thead><th>Pilih</th><th>NO</th><th>NAMA LENGKAP</th><th>TEMPAT/TANGGAL LAHIR</th><th>UNIT</th><th>CABANG</th><th>KYU</th><th>LULUS KYU</th><th>SABUK</th><th>NOMOR REG.PB</th></thead><tbody>`;
+        registrations.forEach((reg, idx) => {
+            const nilai = penilaianData.nilai[reg.id];
+            const lulus = nilai && (parseInt(nilai.kata)+parseInt(nilai.kumite)+parseInt(nilai.teori))/3 >= 70;
+            const kyuLama = reg.sabukAwal==='Putih'?10:reg.sabukAwal==='Kuning'?9:reg.sabukAwal==='Orange'?8:reg.sabukAwal==='Hijau'?7:reg.sabukAwal==='Biru'?5:3;
+            const kyuLulus = lulus ? Math.max(1, kyuLama-1) : kyuLama;
+            const sabuk = kyuLulus>=9?'KUNING':kyuLulus>=7?'ORANGE':kyuLulus>=5?'HIJAU':kyuLulus>=3?'BIRU':'COKLAT';
+            html += `<tr><td><input type="checkbox" class="pilihIjazah" data-id="${reg.id}" ${lulus?'checked':''}>${!lulus?'<br><small>(nilai kurang)</small>':''}</td>
+                <td style="text-align:center;">${idx+1}</td>
+                <td><input type="text" class="namaIjazah" data-id="${reg.id}" value="${reg.nama}"></td>
+                <td><input type="text" class="ttlIjazah" data-id="${reg.id}" value="${reg.ttl||'-'}"></td>
+                <td><input type="text" class="unitIjazah" data-id="${reg.id}" value="${reg.unit}"></td>
+                <td><input type="text" class="cabangIjazahRow" data-id="${reg.id}" value="TIDORE KEPULAUAN"></td>
+                <td><input type="number" class="kyuSekarang" data-id="${reg.id}" value="${kyuLama}" ${!lulus?'disabled':''}></td>
+                <td><input type="number" class="lulusKyu" data-id="${reg.id}" value="${kyuLulus}" ${!lulus?'disabled':''}></td>
+                <td><input type="text" class="sabukIjazah" data-id="${reg.id}" value="${sabuk}" ${!lulus?'disabled':''}></td>
+                <td><input type="text" class="noReg" data-id="${reg.id}" placeholder="Nomor Reg"></td>
+            </tr>`;
+        });
+        html += `</tbody></table></div><button id="downloadIjazahExcel" class="btn-success" style="margin-top:15px;">📥 Download Excel Usulan Ijazah</button>`;
+        panel.innerHTML = html;
+        document.getElementById('downloadIjazahExcel').onclick = () => {
+            const tglFormatted = new Date(document.getElementById('tglIjazah').value).toLocaleDateString('id-ID', { year:'numeric', month:'long', day:'numeric' });
+            let excelRows = [['PANITIA PELAKSANA GASHUKU DAN UJIAN'],['KARATE-DO GOJUKAI INDONESIA'],['KOMISARIAT DAERAH MALUKU UTARA'],['REKAPITULASI NAMA PESERTA UJIAN'],[],['NO','TGL UJIAN','NAMA LENGKAP','TEMPAT/TANGGAL LAHIR','UNIT','CABANG','KYU','LULUS KYU','SABUK','NOMOR REG.PB']];
+            let no = 1;
+            document.querySelectorAll('.pilihIjazah').forEach(cb => {
+                if (cb.checked) {
+                    const id = parseInt(cb.dataset.id);
+                    excelRows.push([no++, tglFormatted, document.querySelector(`.namaIjazah[data-id="${id}"]`).value, document.querySelector(`.ttlIjazah[data-id="${id}"]`).value, document.querySelector(`.unitIjazah[data-id="${id}"]`).value, document.querySelector(`.cabangIjazahRow[data-id="${id}"]`).value, document.querySelector(`.kyuSekarang[data-id="${id}"]`).value, document.querySelector(`.lulusKyu[data-id="${id}"]`).value, document.querySelector(`.sabukIjazah[data-id="${id}"]`).value, document.querySelector(`.noReg[data-id="${id}"]`).value]);
+                }
+            });
+            const ws = XLSX.utils.aoa_to_sheet(excelRows);
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'KESELURUHAN');
+            XLSX.writeFile(wb, `Usulan_Ijazah_Kyu_${document.getElementById('tglIjazah').value}.xlsx`);
+        };
+
+    } else if (section === 'laporan') {
+        showAdminLaporanPanel(panel);
+    } else if (section === 'keuangan') {
+        showAdminKeuanganPanel(panel);
+    } else if (section === 'biaya') {
+        showAdminBiayaPanel(panel);
+    } else if (section === 'unit') {
+        showAdminUnitPanel(panel);
+    } else if (section === 'iuran') {
+        showAdminIuranPanel(panel);
+    } else if (section === 'pendaftar') {
+        let html = '<h3>📋 Data Pendaftar</h3><div class="table-wrapper"><table><thead><th>Nama</th><th>Unit</th><th>Sabuk</th><th>Username</th><th>Preview</th><th>Download</th><th>Hapus</th></thead><tbody>';
+        registrations.forEach(reg => {
+            html += `<tr><td>${reg.nama}</td><td>${reg.unit}</td><td>${reg.sabukAwal||'Putih'}</td><td>${reg.username}</td>
+                <td><button class="previewPendaftar" data-id="${reg.id}" style="background:#0891b2;">👁️ Preview</button></td>
+                <td><button class="dlPendaftar" data-id="${reg.id}" style="background:#2d6a4f;">📄 Download</button></td>
+                <td><button class="hapusPendaftar" data-id="${reg.id}" style="background:#b91c1c;">🗑️ Hapus</button></td>
+            </tr>`;
+        });
+        html += `</tbody></table></div>`;
+        panel.innerHTML = html;
+        document.querySelectorAll('.previewPendaftar').forEach(btn => {
+            btn.onclick = () => {
+                const m = registrations.find(r => r.id == btn.dataset.id);
+                if (m) {
+                    let previewHtml = `<h2>Data Anggota ${m.nama}</h2><p><strong>Unit:</strong> ${m.unit}</p><p><strong>Sabuk:</strong> ${m.sabukAwal}</p><p><strong>Username:</strong> ${m.username}</p><p><strong>TTL:</strong> ${m.ttl}</p><p><strong>Telepon:</strong> ${m.telepon}</p>`;
+                    if (m.foto) previewHtml += `<img src="${m.foto}" style="max-width:150px;">`;
+                    showPreview(`Preview Data ${m.nama}`, previewHtml, () => downloadDoc(m));
+                }
+            };
+        });
+        document.querySelectorAll('.dlPendaftar').forEach(btn => { btn.onclick = () => { const m = registrations.find(r => r.id == btn.dataset.id); if (m) downloadDoc(m); }; });
+        document.querySelectorAll('.hapusPendaftar').forEach(btn => {
+            btn.onclick = async () => {
+                if (!confirm('Hapus member?')) return;
+                showLoading('Menghapus...');
+                try {
+                    await deleteRegistration(parseInt(btn.dataset.id));
+                    showAdminPanel('pendaftar');
+                } catch (e) { alert('Gagal: ' + e.message); }
+                finally { hideLoading(); }
+            };
+        });
+    } else if (section === 'pelatih') {
+        panel.innerHTML = `<h3>🔑 Kelola Zona Pelatih</h3>
+            <div><label>Kode Akses Pelatih</label><input type="text" id="kodePelatihSetting" value="${kodePelatih}"><button id="simpanKodePelatihBtn" class="btn-success" style="margin-top:10px;">💾 Simpan</button></div>
+            <hr><h4>🎬 Video Latihan</h4><div id="videoLatihanAdminList"></div><button id="tambahVideoLatihanBtn" class="btn-success">➕ Tambah</button>
+            <hr><h4>🥋 Video Kata</h4><div id="videoKataAdminList"></div><button id="simpanVideoKataBtn" class="btn-success">💾 Simpan Kata</button>`;
+
+        function renderVideoLatihanAdmin() {
+            let html = '';
+            videoLatihan.forEach((v, idx) => { html += `<div style="background:#f1f5f9; padding:10px; margin-bottom:10px; border-radius:12px;"><input type="text" id="video-judul-${idx}" value="${v.judul}" style="width:100%;"><input type="text" id="video-url-${idx}" value="${v.url}" style="width:100%; margin-top:5px;"><button class="hapusVideoLatihan" data-idx="${idx}" style="background:#b91c1c; margin-top:5px;">Hapus</button></div>`; });
+            document.getElementById('videoLatihanAdminList').innerHTML = html;
+            document.querySelectorAll('.hapusVideoLatihan').forEach(btn => {
+                btn.onclick = async () => {
+                    const idx = parseInt(btn.dataset.idx);
+                    if (videoLatihan[idx].id) await sb.delete('gojukai_video_latihan', videoLatihan[idx].id);
+                    videoLatihan.splice(idx, 1);
+                    renderVideoLatihanAdmin();
+                };
+            });
+        }
+        renderVideoLatihanAdmin();
+        document.getElementById('tambahVideoLatihanBtn').onclick = async () => {
+            showLoading('Menyimpan...');
+            try {
+                const res = await sb.insert('gojukai_video_latihan', { judul: 'Video Baru', url: 'https://www.youtube.com/embed/' });
+                const v = res.length ? { id: res[0].id, judul: 'Video Baru', url: 'https://www.youtube.com/embed/' } : { judul: 'Video Baru', url: '' };
+                videoLatihan.push(v);
+                renderVideoLatihanAdmin();
+            } catch (e) { alert('Gagal: ' + e.message); }
+            finally { hideLoading(); }
+        };
+        // Save video changes inline
+        document.getElementById('tambahVideoLatihanBtn').insertAdjacentHTML('beforebegin', `<button id="simpanVideoLatihanBtn" class="btn-warning" style="margin-right:8px;">💾 Simpan Video</button>`);
+        document.getElementById('simpanVideoLatihanBtn').onclick = async () => {
+            showLoading('Menyimpan...');
+            try {
+                for (let idx = 0; idx < videoLatihan.length; idx++) {
+                    const judul = document.getElementById(`video-judul-${idx}`)?.value || videoLatihan[idx].judul;
+                    const url = document.getElementById(`video-url-${idx}`)?.value || videoLatihan[idx].url;
+                    videoLatihan[idx].judul = judul; videoLatihan[idx].url = url;
+                    if (videoLatihan[idx].id) await sb.update('gojukai_video_latihan', videoLatihan[idx].id, { judul, url });
+                }
+                alert('Video disimpan!');
+            } catch (e) { alert('Gagal: ' + e.message); }
+            finally { hideLoading(); }
+        };
+
+        function renderVideoKataAdmin() {
+            let html = '<div class="grid-2">';
+            for (let sabuk in videoKata) { html += `<div style="background:#f1f5f9; padding:10px; border-radius:12px;"><label><strong>${sabuk}</strong></label><input type="text" id="kata-judul-${sabuk}" value="${videoKata[sabuk].judul}" style="width:100%; margin:5px 0;"><input type="text" id="kata-url-${sabuk}" value="${videoKata[sabuk].url}" style="width:100%;"></div>`; }
+            html += `</div>`;
+            document.getElementById('videoKataAdminList').innerHTML = html;
+        }
+        renderVideoKataAdmin();
+        document.getElementById('simpanVideoKataBtn').onclick = async () => {
+            showLoading('Menyimpan...');
+            try {
+                for (let s in videoKata) {
+                    videoKata[s].judul = document.getElementById(`kata-judul-${s}`).value;
+                    videoKata[s].url = document.getElementById(`kata-url-${s}`).value;
+                }
+                await saveVideoKata();
+                alert('Video kata disimpan!');
+            } catch (e) { alert('Gagal: ' + e.message); }
+            finally { hideLoading(); }
+        };
+        document.getElementById('simpanKodePelatihBtn').onclick = async () => {
+            const k = document.getElementById('kodePelatihSetting').value;
+            if (k) {
+                showLoading('Menyimpan...');
+                try { await saveKodePelatih(k); alert('Kode disimpan!'); }
+                catch (e) { alert('Gagal: ' + e.message); }
+                finally { hideLoading(); }
+            }
+        };
+    }
+}
+
+// ==================== LAPORAN LATIHAN ADMIN ====================
+function showAdminLaporanPanel(panel) {
+    panel.innerHTML = `<h3>📄 Kelola Laporan Latihan</h3>
+        <div class="grid-2">
+            <div><label>KOMDA</label><input type="text" id="editKomda" value="${laporanLatihan.komda}"></div>
+            <div><label>CABANG</label><input type="text" id="editCabang" value="${laporanLatihan.cabang}"></div>
+            <div><label>UNIT</label><input type="text" id="editUnit" value="${laporanLatihan.unit}"></div>
+            <div><label>PELATIH</label><input type="text" id="editPelatih" value="${laporanLatihan.pelatih.join(', ')}"></div>
+            <div><label>Tanggal</label><input type="date" id="editTanggal" value="${laporanLatihan.tanggal}"></div>
+            <div><label>Pukul</label><input type="text" id="editPukul" value="${laporanLatihan.pukul}"></div>
+        </div>
+        <div><label>Pilih Unit Absensi:</label> <select id="selectUnitAbsensi">${Object.keys(unitData).map(u => `<option value="${u}">${u}</option>`).join('')}</select></div>
+        <div id="absensiTableContainer" class="table-wrapper"></div>
+        <div style="margin-top:20px;"><button id="simpanLaporanBtn" class="btn-success">💾 Simpan</button> <button id="previewLaporanBtn" class="btn-info">👁️ Preview</button> <button id="downloadLaporanBtn" class="btn">📥 Download</button></div>`;
+
+    async function renderAbsensi(unit) {
+        const tgl = document.getElementById('editTanggal').value;
+        if (!tgl) { document.getElementById('absensiTableContainer').innerHTML = '<p>Pilih tanggal terlebih dahulu.</p>'; return; }
+        if (!absensiData[tgl]) absensiData[tgl] = {};
+        if (!absensiData[tgl][unit]) absensiData[tgl][unit] = {};
+        let html = `<h4>📋 Absensi Unit ${unit}</h4><table style="width:100%"><thead><tr style="background:#2c3e66; color:white;"><th>Nama</th><th>Sabuk</th><th style="text-align:center;">Hadir</th></tr></thead><tbody>`;
+        (unitData[unit]?.karateka.filter(k => k.aktif) || []).forEach(k => {
+            html += `<tr><td>${k.nama}</td><td>${k.sabuk}</td><td style="text-align:center;"><input type="checkbox" class="absensi-cb" data-unit="${unit}" data-id="${k.id}" ${absensiData[tgl][unit][k.id]==='Hadir'?'checked':''}></td></tr>`;
+        });
+        html += `</tbody></table>`;
+        document.getElementById('absensiTableContainer').innerHTML = html;
+        document.querySelectorAll('.absensi-cb').forEach(cb => {
+            cb.onchange = async () => {
+                const tglNow = document.getElementById('editTanggal').value;
+                const status = cb.checked ? 'Hadir' : 'Tidak Hadir';
+                try { await saveAbsensi(tglNow, cb.dataset.unit, parseInt(cb.dataset.id), status); }
+                catch (e) { alert('Gagal simpan absensi: ' + e.message); }
+            };
+        });
+    }
+
+    document.getElementById('selectUnitAbsensi').onchange = () => renderAbsensi(document.getElementById('selectUnitAbsensi').value);
+    document.getElementById('editTanggal').onchange = () => renderAbsensi(document.getElementById('selectUnitAbsensi').value);
+
+    document.getElementById('simpanLaporanBtn').onclick = async () => {
+        laporanLatihan.komda = document.getElementById('editKomda').value;
+        laporanLatihan.cabang = document.getElementById('editCabang').value;
+        laporanLatihan.unit = document.getElementById('editUnit').value;
+        laporanLatihan.pelatih = document.getElementById('editPelatih').value.split(',').map(s => s.trim());
+        laporanLatihan.tanggal = document.getElementById('editTanggal').value;
+        laporanLatihan.pukul = document.getElementById('editPukul').value;
+        showLoading('Menyimpan...');
+        try { await saveLaporan(); alert('Laporan disimpan!'); }
+        catch (e) { alert('Gagal: ' + e.message); }
+        finally { hideLoading(); }
+    };
+
+    document.getElementById('previewLaporanBtn').onclick = () => {
+        const tgl = document.getElementById('editTanggal').value;
+        let total = 0;
+        if (absensiData[tgl]) for (let u in absensiData[tgl]) total += Object.values(absensiData[tgl][u]).filter(v => v === 'Hadir').length;
+        const tanggalFormatted = new Date(tgl).toLocaleDateString('id-ID', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+        const previewHtml = `<div style="text-align:center;"><strong>LAPORAN LATIHAN KARATE-DO GOJUKAI INDONESIA</strong></div><br>
+            KOMDA : ${laporanLatihan.komda}<br>CABANG : ${laporanLatihan.cabang}<br>UNIT : ${laporanLatihan.unit}<br><br>
+            PELATIH :<br>${laporanLatihan.pelatih.map(p => `&nbsp;&nbsp;${p}`).join('<br>')}<br><br>
+            Jumlah Peserta : ${total} karateka<br>Hari, Tanggal : ${tanggalFormatted}<br>Pukul : ${laporanLatihan.pukul}<br><br>ONEGAISHIMASU 🙏`;
+        showPreview('Preview Laporan Latihan', previewHtml);
+    };
+
+    document.getElementById('downloadLaporanBtn').onclick = () => {
+        const tgl = document.getElementById('editTanggal').value;
+        let total = 0;
+        if (absensiData[tgl]) for (let u in absensiData[tgl]) total += Object.values(absensiData[tgl][u]).filter(v => v === 'Hadir').length;
+        const tanggalFormatted = new Date(tgl).toLocaleDateString('id-ID', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+        const doc = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Laporan Latihan</title></head><body>
+            <div style="text-align:center;"><strong>LAPORAN LATIHAN KARATE-DO GOJUKAI INDONESIA</strong></div><br>
+            KOMDA : ${laporanLatihan.komda}<br>CABANG : ${laporanLatihan.cabang}<br>UNIT : ${laporanLatihan.unit}<br><br>
+            PELATIH :<br>${laporanLatihan.pelatih.map(p => `&nbsp;&nbsp;${p}`).join('<br>')}<br><br>
+            Jumlah Peserta : ${total} karateka<br>Hari, Tanggal : ${tanggalFormatted}<br>Pukul : ${laporanLatihan.pukul}<br><br>ONEGAISHIMASU 🙏</body></html>`;
+        const blob = new Blob([doc], { type: 'application/msword' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Laporan_Latihan_${tgl}.doc`; a.click();
+    };
+
+    if (Object.keys(unitData).length) renderAbsensi(Object.keys(unitData)[0]);
+}
+
+// ==================== KEUANGAN ADMIN ====================
+function showAdminKeuanganPanel(panel) {
+    const unitIuran = getIuranPerUnit();
+    let totalUnit = 0, totalCabang = 0, unitRows = '';
+    for (let unit in unitIuran) {
+        const total = unitIuran[unit];
+        totalUnit += total;
+        const kasCabang = total * 0.2;
+        totalCabang += kasCabang;
+        unitRows += `<tr><td>${unit}</td><td>Rp ${total.toLocaleString()}</td><td>Rp ${(total*0.6).toLocaleString()}</td><td>Rp ${(total*0.2).toLocaleString()}</td><td>Rp ${kasCabang.toLocaleString()}</td></tr>`;
+    }
+    let pengeluaranRows = '';
+    kasCabangData.pengeluaran.forEach(p => { pengeluaranRows += `<tr><td>${p.tanggal}</td><td>${p.keterangan}</td><td>Rp ${p.nominal.toLocaleString()}</td><td><button class="hapusPengeluaran" data-id="${p.id}" style="background:#b91c1c;">Hapus</button></td></tr>`; });
+
+    panel.innerHTML = `<div class="tab-buttons">
+        <button class="tab-btn active" data-tab="unit">📋 Laporan Unit</button>
+        <button class="tab-btn" data-tab="kas">💰 Kas Cabang</button>
+        <button class="tab-btn" data-tab="ujian">📝 Laporan Ujian</button></div>
+        <div id="tabUnit" class="tab-content active">
+            <h4>Rekap Iuran per Unit</h4><div class="table-wrapper"><table><thead><th>Unit</th><th>Total Iuran</th><th>Insentif Pelatih (60%)</th><th>Operasional Unit (20%)</th><th>Kas Cabang (20%)</th></thead><tbody>${unitRows}</tbody></table></div>
+            <div style="margin-top:15px;"><button id="previewUnitBtn" class="btn-info">👁️ Preview</button><button id="exportUnitExcel" class="btn-success">📥 Export Unit</button><button id="exportLaporanKetua" class="btn-info">📋 Laporan Ketua</button></div>
+        </div>
+        <div id="tabKas" class="tab-content">
+            <div class="keuangan-card"><h4>💰 Kas Cabang</h4><div class="total-kas">Rp ${hitungKasCabang().toLocaleString()}</div></div>
+            <h4>📝 Pengeluaran Kas Cabang</h4><div class="table-wrapper"><table><thead><th>Tanggal</th><th>Keterangan</th><th>Nominal</th><th>Aksi</th></thead><tbody>${pengeluaranRows||'<tr><td colspan="4">Belum ada pengeluaran</td></tr>'}</tbody></table></div>
+            <div class="grid-3"><input type="date" id="tglPengeluaran"><input type="text" id="ketPengeluaran" placeholder="Keterangan"><input type="number" id="nominalPengeluaran" placeholder="Nominal"><button id="tambahPengeluaranBtn" class="btn-success">➕ Tambah</button></div>
+            <button id="exportKasExcel" class="btn">📥 Export Kas</button>
+        </div>
+        <div id="tabUjian" class="tab-content"><h4>📝 Pendapatan Ujian Kyu</h4><button id="exportUjianExcel" class="btn-success">📥 Export Ujian</button></div>`;
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById(`tab${btn.dataset.tab.charAt(0).toUpperCase()+btn.dataset.tab.slice(1)}`).classList.add('active');
+        };
+    });
+
+    document.getElementById('tambahPengeluaranBtn').addEventListener('click', async () => {
+        const tanggal = document.getElementById('tglPengeluaran').value;
+        const keterangan = document.getElementById('ketPengeluaran').value;
+        const nominal = parseInt(document.getElementById('nominalPengeluaran').value);
+        if (!tanggal || !keterangan || !nominal) { alert('Isi semua!'); return; }
+        showLoading('Menyimpan...');
+        try { await saveKasCabangPengeluaran({ tanggal, keterangan, nominal }); showAdminKeuanganPanel(panel); }
+        catch (e) { alert('Gagal: ' + e.message); }
+        finally { hideLoading(); }
+    });
+
+    document.querySelectorAll('.hapusPengeluaran').forEach(btn => {
+        btn.onclick = async () => {
+            if (!confirm('Hapus?')) return;
+            showLoading('Menghapus...');
+            try { await deletePengeluaran(parseInt(btn.dataset.id)); showAdminKeuanganPanel(panel); }
+            catch (e) { alert('Gagal: ' + e.message); }
+            finally { hideLoading(); }
+        };
+    });
+
+    document.getElementById('previewUnitBtn')?.addEventListener('click', () => {
+        let previewHtml = '<h3>Laporan Keuangan Unit</h3><table border="1"><thead><th>Unit</th><th>Total Iuran</th><th>Insentif Pelatih (60%)</th><th>Operasional Unit (20%)</th><th>Kas Cabang (20%)</th></thead><tbody>';
+        for (let u in unitIuran) { let t = unitIuran[u]; previewHtml += `<tr><td>${u}</td><td>Rp ${t.toLocaleString()}</td><td>Rp ${(t*0.6).toLocaleString()}</td><td>Rp ${(t*0.2).toLocaleString()}</td><td>Rp ${(t*0.2).toLocaleString()}</td></tr>`; }
+        previewHtml += `<tr style="font-weight:bold;"><td>TOTAL</td><td>Rp ${totalUnit.toLocaleString()}</td><td></td><td></td><td>Rp ${totalCabang.toLocaleString()}</td></tr></tbody></table>`;
+        showPreview('Preview Laporan Keuangan Unit', previewHtml);
+    });
+
+    document.getElementById('exportUnitExcel')?.addEventListener('click', () => {
+        let rows = [['LAPORAN KEUANGAN UNIT'],['Unit','Total Iuran','Insentif Pelatih (60%)','Operasional Unit (20%)','Kas Cabang (20%)']];
+        for (let u in unitIuran) { let t = unitIuran[u]; rows.push([u,t,t*0.6,t*0.2,t*0.2]); }
+        rows.push(['TOTAL',totalUnit,'','',totalCabang]);
+        const ws = XLSX.utils.aoa_to_sheet(rows); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Laporan Unit'); XLSX.writeFile(wb, 'Laporan_Keuangan_Unit.xlsx');
+    });
+
+    document.getElementById('exportLaporanKetua')?.addEventListener('click', () => {
+        let rows = [['LAPORAN KEUANGAN KARATE-DO GOJUKAI'],['Cabang Tidore Kepulauan'],['Per Tanggal: '+new Date().toLocaleDateString('id-ID')],[],['A. REKAP IURAN PER UNIT'],['Unit','Total Iuran','Insentif Pelatih (60%)','Operasional Unit (20%)','Kas Cabang (20%)']];
+        for (let u in unitIuran) { let t = unitIuran[u]; rows.push([u,t,t*0.6,t*0.2,t*0.2]); }
+        rows.push(['TOTAL',totalUnit,'','',totalCabang],[],['B. KAS CABANG'],['Total Kas Cabang',hitungKasCabang()]);
+        const ws = XLSX.utils.aoa_to_sheet(rows); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Laporan Ketua'); XLSX.writeFile(wb, 'Laporan_Keuangan_Untuk_Ketua.xlsx');
+    });
+
+    document.getElementById('exportKasExcel')?.addEventListener('click', () => {
+        let rows = [['LAPORAN KAS CABANG'],['Total Kas Cabang',hitungKasCabang()],[],['DAFTAR PENGELUARAN'],['Tanggal','Keterangan','Nominal']];
+        kasCabangData.pengeluaran.forEach(p => rows.push([p.tanggal,p.keterangan,p.nominal]));
+        const ws = XLSX.utils.aoa_to_sheet(rows); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Kas Cabang'); XLSX.writeFile(wb, 'Laporan_Kas_Cabang.xlsx');
+    });
+
+    document.getElementById('exportUjianExcel')?.addEventListener('click', () => {
+        let rows = [['LAPORAN PENDAPATAN UJIAN KYU'],['Sabuk Tujuan','Jumlah Peserta','Biaya per Orang','Total Pendapatan']];
+        let perSabuk = {};
+        for (let id in penilaianData.nilai) {
+            const n = penilaianData.nilai[id];
+            if (n) { const m = registrations.find(r => r.id == id); if (m) { const s = m.sabukAwal; perSabuk[s] = (perSabuk[s]||0)+1; } }
+        }
+        let total = 0;
+        for (let s in perSabuk) { const biaya = biayaUjian[s]||100000; rows.push([s,perSabuk[s],biaya,perSabuk[s]*biaya]); total += perSabuk[s]*biaya; }
+        rows.push(['TOTAL','','',total]);
+        const ws = XLSX.utils.aoa_to_sheet(rows); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Laporan Ujian'); XLSX.writeFile(wb, 'Laporan_Pendapatan_Ujian.xlsx');
+    });
+}
+
+// ==================== BIAYA UJIAN ADMIN ====================
+function showAdminBiayaPanel(panel) {
+    panel.innerHTML = `<h3>💵 Biaya Ujian per Sabuk Tujuan</h3><div class="grid-4">
+        <div><label>Putih → Kuning</label><input type="number" id="biayaPutih" value="${biayaUjian['Putih']}"></div>
+        <div><label>Kuning → Orange</label><input type="number" id="biayaKuning" value="${biayaUjian['Kuning']}"></div>
+        <div><label>Orange → Hijau</label><input type="number" id="biayaOrange" value="${biayaUjian['Orange']}"></div>
+        <div><label>Hijau → Biru</label><input type="number" id="biayaHijau" value="${biayaUjian['Hijau']}"></div>
+        <div><label>Biru → Coklat</label><input type="number" id="biayaBiru" value="${biayaUjian['Biru']}"></div>
+        <div><label>Coklat → Hitam</label><input type="number" id="biayaCoklat" value="${biayaUjian['Coklat']}"></div>
+    </div><button id="simpanBiayaBtn" class="btn-success">💾 Simpan</button>`;
+    document.getElementById('simpanBiayaBtn').onclick = async () => {
+        biayaUjian['Putih'] = parseInt(document.getElementById('biayaPutih').value)||90000;
+        biayaUjian['Kuning'] = parseInt(document.getElementById('biayaKuning').value)||100000;
+        biayaUjian['Orange'] = parseInt(document.getElementById('biayaOrange').value)||100000;
+        biayaUjian['Hijau'] = parseInt(document.getElementById('biayaHijau').value)||110000;
+        biayaUjian['Biru'] = parseInt(document.getElementById('biayaBiru').value)||120000;
+        biayaUjian['Coklat'] = parseInt(document.getElementById('biayaCoklat').value)||130000;
+        showLoading('Menyimpan...');
+        try { await saveBiayaUjian(); alert('Biaya ujian disimpan!'); }
+        catch (e) { alert('Gagal: ' + e.message); }
+        finally { hideLoading(); }
+    };
+}
+
+// ==================== UNIT ADMIN ====================
+function showAdminUnitPanel(panel) {
+    syncKaratekaFromRegistrations();
+    panel.innerHTML = `<h3>🥋 Kelola Unit & Anggota</h3>
+        <div class="grid-3"><input type="text" id="newUnitName" placeholder="Nama Unit Baru"><button id="addUnitBtn" class="btn-success">➕ Tambah Unit</button></div>
+        <div id="unitsList"></div>`;
+
+    function renderUnits() {
+        let unitsHtml = '';
+        for (const [unitName, unit] of Object.entries(unitData)) {
+            unitsHtml += `<div class="unit-card"><div style="display:flex; justify-content:space-between;"><strong>🏢 ${unitName}</strong>
+                <div><button class="editUnitBtn" data-unit="${unitName}" style="background:#d97706;">✏️ Edit</button>
+                <button class="deleteUnitBtn" data-unit="${unitName}" style="background:#b91c1c;">🗑️</button></div></div>
+                <h4>Pelatih:</h4><ul>${unit.pelatih.map(p=>`<li>${p}</li>`).join('')}</ul>
+                <button class="addPelatihBtn" data-unit="${unitName}" style="background:#2c3e66;">➕ Tambah Pelatih</button>
+                <h4>Karateka:</h4><div class="table-wrapper"><table><thead><th>Nama</th><th>Sabuk</th><th>Status</th><th>Aksi</th></thead><tbody>
+                ${unit.karateka.map((k,idx)=>`<tr>
+                    <td>${k.nama}</td><td>${k.sabuk}</td>
+                    <td>${k.aktif?'🟢 Aktif':'🔴 Nonaktif'}</td>
+                    <td><button class="toggleAktifBtn" data-unit="${unitName}" data-idx="${idx}" style="background:#d97706;">${k.aktif?'Nonaktifkan':'Aktifkan'}</button>
+                    <button class="hapusKaratekaBtn" data-unit="${unitName}" data-idx="${idx}" style="background:#b91c1c;">Hapus</button></td>
+                </tr>`).join('')}</tbody></table></div></div><hr>`;
+        }
+        document.getElementById('unitsList').innerHTML = unitsHtml;
+
+        document.querySelectorAll('.deleteUnitBtn').forEach(btn => {
+            btn.onclick = async () => {
+                if (!confirm('Hapus unit?')) return;
+                showLoading('Menghapus...');
+                try {
+                    await deleteUnit(btn.dataset.unit);
+                    delete unitData[btn.dataset.unit];
+                    renderUnits(); updateUnitDropdown();
+                } catch (e) { alert('Gagal: ' + e.message); }
+                finally { hideLoading(); }
+            };
+        });
+        document.querySelectorAll('.editUnitBtn').forEach(btn => {
+            btn.onclick = async () => {
+                const newName = prompt('Nama baru:', btn.dataset.unit);
+                if (newName && !unitData[newName]) {
+                    showLoading('Menyimpan...');
+                    try {
+                        unitData[newName] = unitData[btn.dataset.unit];
+                        delete unitData[btn.dataset.unit];
+                        registrations.forEach(r => { if (r.unit === btn.dataset.unit) r.unit = newName; });
+                        await saveUnits();
+                        for (const r of registrations.filter(r => r.unit === newName)) await saveRegistrations(r);
+                        renderUnits(); updateUnitDropdown();
+                    } catch (e) { alert('Gagal: ' + e.message); }
+                    finally { hideLoading(); }
+                }
+            };
+        });
+        document.querySelectorAll('.addPelatihBtn').forEach(btn => {
+            btn.onclick = async () => {
+                const nama = prompt('Nama pelatih:');
+                if (nama) {
+                    unitData[btn.dataset.unit].pelatih.push(nama);
+                    showLoading('Menyimpan...');
+                    try { await saveUnits(); renderUnits(); }
+                    catch (e) { alert('Gagal: ' + e.message); }
+                    finally { hideLoading(); }
+                }
+            };
+        });
+        document.querySelectorAll('.toggleAktifBtn').forEach(btn => {
+            btn.onclick = async () => {
+                const idx = parseInt(btn.dataset.idx);
+                unitData[btn.dataset.unit].karateka[idx].aktif = !unitData[btn.dataset.unit].karateka[idx].aktif;
+                showLoading('Menyimpan...');
+                try { await saveUnits(); renderUnits(); }
+                catch (e) { alert('Gagal: ' + e.message); }
+                finally { hideLoading(); }
+            };
+        });
+        document.querySelectorAll('.hapusKaratekaBtn').forEach(btn => {
+            btn.onclick = async () => {
+                const idx = parseInt(btn.dataset.idx);
+                const k = unitData[btn.dataset.unit].karateka[idx];
+                if (!confirm(`Hapus ${k.nama}?`)) return;
+                showLoading('Menghapus...');
+                try {
+                    await deleteRegistration(k.id);
+                    renderUnits(); updateUnitDropdown();
+                } catch (e) { alert('Gagal: ' + e.message); }
+                finally { hideLoading(); }
+            };
+        });
+    }
+
+    document.getElementById('addUnitBtn').addEventListener('click', async () => {
+        const newUnit = document.getElementById('newUnitName').value.trim();
+        if (newUnit && !unitData[newUnit]) {
+            unitData[newUnit] = { pelatih: [], karateka: [] };
+            showLoading('Menyimpan...');
+            try { await saveUnits(); renderUnits(); updateUnitDropdown(); document.getElementById('newUnitName').value = ''; }
+            catch (e) { alert('Gagal: ' + e.message); }
+            finally { hideLoading(); }
+        } else alert('Unit sudah ada atau nama kosong!');
+    });
+    renderUnits();
+}
+
+// ==================== IURAN ADMIN ====================
+function showAdminIuranPanel(panel) {
+    let html = `<h3>💰 Kelola Iuran</h3>
+        <div class="grid-3">
+            <select id="pilihMember"><option value="">-- Pilih Karateka --</option>${registrations.map(m=>`<option value="${m.id}">${m.nama} - ${m.unit}</option>`).join('')}</select>
+            <input type="month" id="bulanIuran">
+            <input type="number" id="nominalIuran" value="100000">
+            <button id="tambahIuranBtn" class="btn-success">➕ Tambah</button>
+        </div>
+        <h4>📋 Semua Data Iuran</h4>
+        <div class="table-wrapper"><table><thead><th>Karateka</th><th>Unit</th><th>Bulan</th><th>Nominal</th><th>Status</th><th>Aksi</th></thead><tbody>`;
+    iuranData.forEach(i => {
+        const m = registrations.find(r => r.id === i.memberId);
+        html += `<tr>
+            <td>${m?.nama||'Unknown'}</td><td>${m?.unit||'-'}</td><td>${i.bulan}</td>
+            <td>Rp ${(i.nominal||0).toLocaleString()}</td>
+            <td class="${i.status==='Lunas'?'status-lunas':'status-belum'}">${i.status}</td>
+            <td>${i.status!=='Lunas'?`<button class="validasiIuran" data-id="${i.id}" style="background:#2d6a4f;">✅ Validasi</button>`:''}
+            <button class="hapusIuran" data-id="${i.id}" style="background:#b91c1c;">🗑️</button></td>
+        </tr>`;
+    });
+    html += `</tbody></table></div>`;
+    panel.innerHTML = html;
+
+    document.getElementById('tambahIuranBtn').addEventListener('click', async () => {
+        const memberId = parseInt(document.getElementById('pilihMember').value);
+        const bulan = document.getElementById('bulanIuran').value;
+        const nominal = parseInt(document.getElementById('nominalIuran').value);
+        if (!memberId || !bulan) { alert('Pilih member dan bulan'); return; }
+        if (iuranData.some(i => i.memberId === memberId && i.bulan === bulan)) { alert('Sudah ada!'); return; }
+        const newIuran = { memberId, bulan, nominal, status: 'Belum Lunas', tglBayar: null, validasiBy: null };
+        showLoading('Menyimpan...');
+        try { await saveIuran(newIuran); iuranData.push(newIuran); showAdminIuranPanel(panel); }
+        catch (e) { alert('Gagal: ' + e.message); }
+        finally { hideLoading(); }
+    });
+    document.querySelectorAll('.validasiIuran').forEach(btn => {
+        btn.onclick = async () => {
+            const iuran = iuranData.find(i => i.id == btn.dataset.id);
+            if (!iuran) return;
+            iuran.status = 'Lunas'; iuran.tglBayar = new Date().toLocaleDateString('id-ID'); iuran.validasiBy = 'Admin';
+            showLoading('Menyimpan...');
+            try { await saveIuran(iuran); showAdminIuranPanel(panel); }
+            catch (e) { alert('Gagal: ' + e.message); }
+            finally { hideLoading(); }
+        };
+    });
+    document.querySelectorAll('.hapusIuran').forEach(btn => {
+        btn.onclick = async () => {
+            if (!confirm('Hapus?')) return;
+            showLoading('Menghapus...');
+            try { await deleteIuran(parseInt(btn.dataset.id)); showAdminIuranPanel(panel); }
+            catch (e) { alert('Gagal: ' + e.message); }
+            finally { hideLoading(); }
+        };
+    });
+}
+
+// ==================== FILE MANAGEMENT ====================
+function refreshFileList(category, elementId) {
+    const container = document.getElementById(elementId);
+    if (!container) return;
+    if (uploadedFiles[category].length === 0) { container.innerHTML = '<p>Belum ada file.</p>'; return; }
+    let html = '';
+    uploadedFiles[category].forEach(f => { html += `<div class="file-item"><a href="${f.url}" target="_blank">📄 ${f.name}</a><button class="hapusFile" data-id="${f.id}" data-cat="${category}" style="background:#b91c1c;">Hapus</button></div>`; });
+    container.innerHTML = html;
+    document.querySelectorAll('.hapusFile').forEach(btn => {
+        btn.onclick = async () => {
+            showLoading('Menghapus...');
+            try {
+                await deleteFile(parseInt(btn.dataset.id), btn.dataset.cat);
+                refreshFileList(btn.dataset.cat, elementId);
+            } catch (e) { alert('Gagal: ' + e.message); }
+            finally { hideLoading(); }
+        };
+    });
+}
+
+function uploadFile(category, fileInputId, listElementId) {
+    const file = document.getElementById(fileInputId).files[0];
+    if (!file) { alert('Pilih file'); return; }
+    // Untuk file besar, simpan sebagai base64 di Supabase.
+    // Catatan: untuk produksi, gunakan Supabase Storage untuk file biner.
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        showLoading('Mengupload file...');
+        try {
+            await addFile(category, file.name, e.target.result);
+            refreshFileList(category, listElementId);
+            alert('Upload berhasil!');
+        } catch (err) { alert('Gagal upload: ' + err.message); }
+        finally { hideLoading(); }
+    };
+    reader.readAsDataURL(file);
+}
+
+function downloadDoc(m) {
+    const html = `<html><body><h2>Data Anggota ${m.nama}</h2><p>Unit: ${m.unit}</p><p>Sabuk: ${m.sabukAwal}</p><p>Username: ${m.username}</p><p>TTL: ${m.ttl}</p><p>Telepon: ${m.telepon}</p>${m.foto?`<img src="${m.foto}" style="max-width:200px;">`:''}  </body></html>`;
+    const blob = new Blob([html], { type: 'application/msword' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Anggota_${m.nama}.doc`; a.click(); URL.revokeObjectURL(a.href);
+}
+
+// ==================== INIT ====================
+syncKaratekaFromRegistrations();
+updateUnitDropdown();
+hideAllSections();
+landingDiv.classList.remove('hidden');
+showPublicToolbar(true);
+
+// Auto-load jika config sudah ada
+if (SUPABASE_URL && SUPABASE_KEY) {
+    loadAllData();
+}
+</script>
+</body>
+</html>
