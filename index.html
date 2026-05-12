@@ -833,11 +833,17 @@ async function saveUnits() {
     for (const [nama, unit] of Object.entries(unitData)) {
         const pelatihArr = Array.isArray(unit.pelatih) ? unit.pelatih : [];
         const karatekaArr = Array.isArray(unit.karateka) ? unit.karateka : [];
-        await sbFetch('gojukai_units', {
-            method: 'POST',
-            body: JSON.stringify({ nama, pelatih: pelatihArr, karateka: karatekaArr }),
-            headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' }
-        });
+        // Check if unit already exists by id
+        const existing = await sb.select('gojukai_units', `nama=eq.${encodeURIComponent(nama)}`);
+        if (existing && existing.length > 0) {
+            await sb.update('gojukai_units', existing[0].id, { pelatih: pelatihArr, karateka: karatekaArr });
+        } else {
+            await sbFetch('gojukai_units', {
+                method: 'POST',
+                body: JSON.stringify({ nama, pelatih: pelatihArr, karateka: karatekaArr }),
+                headers: { 'Prefer': 'return=minimal' }
+            });
+        }
     }
 }
 
@@ -1939,25 +1945,68 @@ function showAdminBiayaPanel(panel) {
 // ==================== UNIT ADMIN ====================
 function showAdminUnitPanel(panel) {
     syncKaratekaFromRegistrations();
-    panel.innerHTML = `<h3>🥋 Kelola Unit & Anggota</h3>
-        <div class="grid-3"><input type="text" id="newUnitName" placeholder="Nama Unit Baru"><button id="addUnitBtn" class="btn-success">➕ Tambah Unit</button></div>
+    panel.innerHTML = `<h3>🏢 Kelola Unit & Anggota</h3>
+
+        <div class="card" style="margin-bottom:18px;padding:18px 20px">
+          <h4 style="margin-bottom:12px;font-size:.85rem;letter-spacing:.08em">➕ TAMBAH UNIT BARU</h4>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <input type="text" id="newUnitName" placeholder="Nama unit baru..." style="flex:1;min-width:180px">
+            <button id="addUnitBtn" class="btn-success" style="white-space:nowrap">➕ Tambah Unit</button>
+          </div>
+        </div>
+
         <div id="unitsList"></div>`;
 
     function renderUnits() {
+        const entries = Object.entries(unitData);
+        if (entries.length === 0) {
+            document.getElementById('unitsList').innerHTML = 
+                '<p style="text-align:center;color:var(--text-mid);padding:28px;font-style:italic">Belum ada unit. Tambahkan unit pertama di atas.</p>';
+            return;
+        }
         let unitsHtml = '';
-        for (const [unitName, unit] of Object.entries(unitData)) {
-            unitsHtml += `<div class="unit-card"><div style="display:flex; justify-content:space-between;"><strong>🏢 ${unitName}</strong>
-                <div><button class="editUnitBtn" data-unit="${unitName}" style="background:#d97706;">✏️ Edit</button>
-                <button class="deleteUnitBtn" data-unit="${unitName}" style="background:#b91c1c;">🗑️</button></div></div>
-                <h4>Pelatih:</h4><ul>${unit.pelatih.map(p=>`<li>${p}</li>`).join('')}</ul>
-                <button class="addPelatihBtn" data-unit="${unitName}" style="background:#2c3e66;">➕ Tambah Pelatih</button>
-                <h4>Karateka:</h4><div class="table-wrapper"><table><thead><th>Nama</th><th>Sabuk</th><th>Status</th><th>Aksi</th></thead><tbody>
-                ${unit.karateka.map((k,idx)=>`<tr>
+        for (const [unitName, unit] of entries) {
+            unitsHtml += `
+            <div class="unit-card">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <strong style="font-size:1rem">🏢 ${unitName}</strong>
+                <div style="display:flex;gap:8px">
+                  <button class="editUnitBtn btn-warning" data-unit="${unitName}">✏️ Edit</button>
+                  <button class="deleteUnitBtn btn-danger" data-unit="${unitName}">🗑️ Hapus</button>
+                </div>
+              </div>
+
+              <div style="margin-bottom:14px">
+                <h4 style="font-size:.75rem;letter-spacing:.1em;margin-bottom:8px">PELATIH</h4>
+                <ul style="list-style:none;padding:0;margin-bottom:8px">
+                  ${unit.pelatih.length ? unit.pelatih.map((p,pi)=>`
+                    <li style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--gold-dim)">
+                      <span>• ${p}</span>
+                      <button class="hapusPelatihBtn btn-danger" data-unit="${unitName}" data-idx="${pi}" style="padding:3px 10px;font-size:.65rem">✕</button>
+                    </li>`).join('') : '<li style="color:var(--text-mid);font-style:italic;font-size:.85rem">Belum ada pelatih</li>'}
+                </ul>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <input type="text" class="newPelatihInput" data-unit="${unitName}" placeholder="Nama pelatih baru..." style="flex:1;min-width:150px;padding:6px 10px;font-size:.8rem">
+                  <button class="addPelatihBtn btn-success" data-unit="${unitName}" style="white-space:nowrap;padding:6px 14px;font-size:.7rem">➕ Tambah Pelatih</button>
+                </div>
+              </div>
+
+              <div>
+                <h4 style="font-size:.75rem;letter-spacing:.1em;margin-bottom:8px">KARATEKA</h4>
+                <div class="table-wrapper">
+                  <table><thead><tr><th>Nama</th><th>Sabuk</th><th>Status</th><th>Aksi</th></tr></thead><tbody>
+                  ${unit.karateka.length ? unit.karateka.map((k,idx)=>`<tr>
                     <td>${k.nama}</td><td>${k.sabuk}</td>
                     <td>${k.aktif?'🟢 Aktif':'🔴 Nonaktif'}</td>
-                    <td><button class="toggleAktifBtn" data-unit="${unitName}" data-idx="${idx}" style="background:#d97706;">${k.aktif?'Nonaktifkan':'Aktifkan'}</button>
-                    <button class="hapusKaratekaBtn" data-unit="${unitName}" data-idx="${idx}" style="background:#b91c1c;">Hapus</button></td>
-                </tr>`).join('')}</tbody></table></div></div><hr>`;
+                    <td style="white-space:nowrap">
+                      <button class="toggleAktifBtn" data-unit="${unitName}" data-idx="${idx}" style="background:#d97706;padding:3px 8px;font-size:.62rem">${k.aktif?'Nonaktifkan':'Aktifkan'}</button>
+                      <button class="hapusKaratekaBtn btn-danger" data-unit="${unitName}" data-idx="${idx}" style="padding:3px 8px;font-size:.62rem">Hapus</button>
+                    </td>
+                  </tr>`).join('') : '<tr><td colspan="4" style="text-align:center;font-style:italic;color:var(--text-mid)">Belum ada karateka di unit ini</td></tr>'}
+                  </tbody></table>
+                </div>
+              </div>
+            </div><hr>`;
         }
         document.getElementById('unitsList').innerHTML = unitsHtml;
 
@@ -1992,14 +2041,28 @@ function showAdminUnitPanel(panel) {
         });
         document.querySelectorAll('.addPelatihBtn').forEach(btn => {
             btn.onclick = async () => {
-                const nama = prompt('Nama pelatih:');
+                const input = document.querySelector(`.newPelatihInput[data-unit="${btn.dataset.unit}"]`);
+                const nama = input ? input.value.trim() : '';
                 if (nama) {
                     unitData[btn.dataset.unit].pelatih.push(nama);
+                    if (input) input.value = '';
                     showLoading('Menyimpan...');
                     try { await saveUnits(); renderUnits(); }
                     catch (e) { alert('Gagal: ' + e.message); }
                     finally { hideLoading(); }
-                }
+                } else { alert('Masukkan nama pelatih terlebih dahulu.'); }
+            };
+        });
+        document.querySelectorAll('.hapusPelatihBtn').forEach(btn => {
+            btn.onclick = async () => {
+                const unit = btn.dataset.unit;
+                const pi = parseInt(btn.dataset.idx);
+                if (!confirm('Hapus pelatih ini?')) return;
+                unitData[unit].pelatih.splice(pi, 1);
+                showLoading('Menyimpan...');
+                try { await saveUnits(); renderUnits(); }
+                catch (e) { alert('Gagal: ' + e.message); }
+                finally { hideLoading(); }
             };
         });
         document.querySelectorAll('.toggleAktifBtn').forEach(btn => {
@@ -2155,7 +2218,7 @@ if (SUPABASE_URL && SUPABASE_KEY) {
 }
 
 // ==================== IMGBB UPLOAD HELPER ====================
-const IMGBB_API_KEY = 'c06cc94a680d002df87b544ef34cae93'; 
+const IMGBB_API_KEY = '287432b34df8f0d38d0d776f95bc6823'; // free public demo key – replace with yours
 
 async function uploadToImgbb(file) {
     const fd = new FormData();
