@@ -178,29 +178,8 @@ body.dark .sabuk-tab{background:rgba(255,255,255,.06);color:var(--text-lt)}
   box-shadow:var(--shadow-lg)}
 body.dark .preview-content{background:var(--navy-mid)}
 
-/* ── Supabase banner — hidden, shown as modal ── */
+/* ── Supabase banner — hidden ── */
 #supabaseConfigBanner{display:none}
-#sbModal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);
-  z-index:5000;display:flex;justify-content:center;align-items:center}
-#sbModal.hidden{display:none!important}
-#sbModalBox{background:var(--cream);border:2px solid var(--gold-dim);border-radius:8px;
-  padding:32px 36px;width:560px;max-width:94%;box-shadow:var(--shadow-lg);position:relative}
-body.dark #sbModalBox{background:var(--navy-mid)}
-#sbModalBox h3{font-family:'Cinzel',serif;color:var(--navy);font-size:1.08rem;margin-bottom:6px}
-body.dark #sbModalBox h3{color:var(--gold-lt)}
-#sqlSetupBox{margin-top:12px;background:rgba(13,27,46,.06);border-radius:4px;padding:14px}
-body.dark #sqlSetupBox{background:rgba(0,0,0,.3)}
-#sqlSetupText{font-size:.72rem;overflow-x:auto;white-space:pre-wrap;color:var(--text)}
-body.dark #sqlSetupText{color:var(--text-lt)}
-
-/* ── Floating gear btn ── */
-#gearBtn{position:fixed;bottom:22px;right:22px;width:48px;height:48px;
-  background:var(--navy);border:2px solid var(--gold);border-radius:50%;
-  color:var(--gold);font-size:1.25rem;cursor:pointer;z-index:4000;
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:0 4px 18px rgba(0,0,0,.42);transition:all .2s;padding:0}
-#gearBtn:hover{background:var(--gold);color:var(--navy);border-color:var(--gold);
-  transform:rotate(35deg) scale(1.08)}
 
 /* ── DB Badge ── */
 .db-status{font-family:'Cinzel',serif;font-size:.66rem;letter-spacing:.07em;
@@ -282,38 +261,7 @@ body.dark .imgbb-note{color:var(--text-lt)}
 </head>
 <body>
 
-<!-- ── FLOATING GEAR BUTTON ── -->
-<button id="gearBtn" title="Konfigurasi Database">⚙</button>
 
-<!-- ── SUPABASE CONFIG MODAL ── -->
-<div id="sbModal" class="hidden">
-  <div id="sbModalBox">
-    <h3>⚙️ Konfigurasi Database Supabase</h3>
-    <p style="font-size:.9rem;margin-bottom:18px;opacity:.72;">Masukkan URL dan Anon Key dari project Supabase Anda untuk menyimpan data di cloud.</p>
-    <div style="margin-bottom:14px">
-      <label>Supabase URL</label>
-      <input type="text" id="sbUrl" placeholder="https://xxxx.supabase.co" value="">
-    </div>
-    <div style="margin-bottom:18px">
-      <label>Supabase Anon Key</label>
-      <input type="text" id="sbKey" placeholder="eyJhbGc..." value="">
-    </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-      <button id="saveSupabaseConfig" class="btn-success">💾 Simpan & Hubungkan</button>
-      <button id="testSupabaseConn" class="btn-info">🔌 Test Koneksi</button>
-      <button id="closeSbModal" class="btn-outline">✕ Tutup</button>
-      <span id="connStatus" style="font-size:.85rem;font-weight:bold;"></span>
-    </div>
-    <div style="margin-top:14px;font-size:.8rem;opacity:.65">
-      💡 <strong>Setup Database:</strong> Jalankan SQL di Supabase SQL Editor sebelum menggunakan.
-      <button id="showSqlBtn" style="font-size:.7rem;padding:3px 9px;margin-left:5px;">Lihat SQL</button>
-    </div>
-    <div id="sqlSetupBox" class="hidden">
-      <pre id="sqlSetupText"></pre>
-      <button id="copySqlBtn" class="btn-info" style="margin-top:8px;font-size:.78rem;">📋 Copy SQL</button>
-    </div>
-  </div>
-</div>
 
 <!-- ── INVISIBLE OLD BANNER (keep IDs for JS compatibility) ── -->
 <div id="supabaseConfigBanner" style="display:none"></div>
@@ -467,131 +415,11 @@ body.dark .imgbb-note{color:var(--text-lt)}
 <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 <script>
 // ==================== SUPABASE CONFIG ====================
-const SB_URL_KEY = 'gojukai_sb_url';
-const SB_KEY_KEY = 'gojukai_sb_key';
-
-let SUPABASE_URL = localStorage.getItem(SB_URL_KEY) || '';
-let SUPABASE_KEY = localStorage.getItem(SB_KEY_KEY) || '';
+let SUPABASE_URL = 'https://ywdjavlpygjigdkkwjri.supabase.co';
+let SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3ZGphdmxweWdqaWdka2t3anJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0OTI5OTksImV4cCI6MjA5NDA2ODk5OX0.LZOX3jjK6s-i_EmndDzUFR2y2ANdckUZDA4igHmWrHs';
 let isDbConnected = false;
 
-// Pre-fill config fields
-document.getElementById('sbUrl').value = SUPABASE_URL;
-document.getElementById('sbKey').value = SUPABASE_KEY;
 
-// SQL Setup script
-const SQL_SETUP = `-- ============================================================
--- GOJUKAI TIDORE - Supabase Database Setup
--- Jalankan script ini di Supabase SQL Editor
--- ============================================================
-
-create table if not exists gojukai_settings (
-  key text primary key,
-  value text
-);
-
-create table if not exists gojukai_pendaftar (
-  id bigint primary key,
-  nama text, ttl text, jk text, pekerjaan text,
-  alamat text, telepon text, ortu text, pekerjaanortu text,
-  alamatortu text, teleponortu text, unit text,
-  sabuk_awal text default 'Putih', foto text,
-  tanggal text, username text unique, password text
-);
-
-create table if not exists gojukai_units (
-  id serial primary key,
-  nama text unique,
-  pelatih jsonb default '[]',
-  karateka jsonb default '[]'
-);
-
-create table if not exists gojukai_iuran (
-  id serial primary key,
-  member_id bigint, bulan text, nominal integer,
-  status text default 'Belum Lunas',
-  tgl_bayar text, validasi_by text
-);
-
-create table if not exists gojukai_absensi (
-  id serial primary key,
-  tanggal text, unit text,
-  member_id bigint, status text
-);
-
-create table if not exists gojukai_pengumuman (
-  id serial primary key,
-  teks text, created_at timestamp default now()
-);
-
-create table if not exists gojukai_penilaian (
-  id serial primary key,
-  tanggal text, lokasi text, cabang text,
-  member_id bigint unique,
-  nilai jsonb
-);
-
-create table if not exists gojukai_kas_pengeluaran (
-  id serial primary key,
-  tanggal text, keterangan text, nominal integer,
-  created_at timestamp default now()
-);
-
-create table if not exists gojukai_files (
-  id serial primary key,
-  kategori text, nama text, url text,
-  created_at timestamp default now()
-);
-
-create table if not exists gojukai_video_latihan (
-  id serial primary key,
-  judul text, url text,
-  created_at timestamp default now()
-);
-
-create table if not exists gojukai_video_kata (
-  id serial primary key,
-  sabuk text unique, judul text, url text
-);
-
--- Insert data awal jika belum ada
-insert into gojukai_settings (key, value) values
-  ('kode_pelatih', 'GOJUKAI2025'),
-  ('biaya_ujian', '{"Putih":90000,"Kuning":100000,"Orange":100000,"Hijau":110000,"Biru":120000,"Coklat":130000}'),
-  ('laporan_latihan', '{"komda":"MALUT","cabang":"TIDORE KEPULAUAN","unit":"RQL TIDORE","pelatih":["Senpai Rohim Puryanto"],"tanggal":"2025-12-28","pukul":"16.00 - 18.00 WIT"}'),
-  ('logo', '')
-on conflict (key) do nothing;
-
-insert into gojukai_units (nama, pelatih, karateka) values
-  ('Tidore Pusat', '["Sensei Rahmat"]', '[]'),
-  ('Rum', '["Sensei Fatima"]', '[]'),
-  ('Bastiong', '["Senpai Joko"]', '[]')
-on conflict (nama) do nothing;
-
-insert into gojukai_pengumuman (teks) values
-  ('📢 Latihan rutin setiap Sabtu & Minggu pukul 15.00 WIT di Dojo Tidore')
-on conflict do nothing;
-
-insert into gojukai_video_kata (sabuk, judul, url) values
-  ('Putih', 'Taikyoku Sono Ichi', 'https://www.youtube.com/embed/dQw4w9WgXcQ'),
-  ('Kuning', 'Gekisai Dai Ichi', 'https://www.youtube.com/embed/dQw4w9WgXcQ'),
-  ('Orange', 'Gekisai Dai Ni', 'https://www.youtube.com/embed/dQw4w9WgXcQ'),
-  ('Hijau', 'Saifa', 'https://www.youtube.com/embed/dQw4w9WgXcQ'),
-  ('Biru', 'Seienchin', 'https://www.youtube.com/embed/dQw4w9WgXcQ'),
-  ('Coklat', 'Sanchin / Tensho', 'https://www.youtube.com/embed/dQw4w9WgXcQ')
-on conflict (sabuk) do nothing;
-
-insert into gojukai_video_latihan (judul, url) values
-  ('Kuda-kuda Dasar (Dachi)', 'https://www.youtube.com/embed/dQw4w9WgXcQ'),
-  ('Pukulan Dasar (Tsuki)', 'https://www.youtube.com/embed/dQw4w9WgXcQ')
-on conflict do nothing;`;
-
-document.getElementById('sqlSetupText').textContent = SQL_SETUP;
-document.getElementById('showSqlBtn').onclick = () => {
-    document.getElementById('sqlSetupBox').classList.toggle('hidden');
-};
-document.getElementById('copySqlBtn').onclick = () => {
-    navigator.clipboard.writeText(SQL_SETUP).then(() => alert('SQL berhasil di-copy!'));
-};
 
 // ==================== SUPABASE API HELPER ====================
 async function sbFetch(endpoint, options = {}) {
@@ -1074,34 +902,6 @@ function updateLogoDisplay(logoData) {
     // Keep landingLogo hidden - logo is shown only in hero header
     if (logoData && landingLogo) { landingLogo.src = logoData; landingLogo.style.display = 'none'; }
 }
-
-// ==================== SUPABASE CONNECT BUTTON ====================
-document.getElementById('saveSupabaseConfig').onclick = async () => {
-    const url = document.getElementById('sbUrl').value.trim().replace(/\/$/, '');
-    const key = document.getElementById('sbKey').value.trim();
-    if (!url || !key) { alert('Isi URL dan Key Supabase!'); return; }
-    SUPABASE_URL = url; SUPABASE_KEY = key;
-    localStorage.setItem(SB_URL_KEY, url);
-    localStorage.setItem(SB_KEY_KEY, key);
-    await loadAllData();
-};
-
-document.getElementById('testSupabaseConn').onclick = async () => {
-    const url = document.getElementById('sbUrl').value.trim().replace(/\/$/, '');
-    const key = document.getElementById('sbKey').value.trim();
-    if (!url || !key) { alert('Isi URL dan Key dulu!'); return; }
-    SUPABASE_URL = url; SUPABASE_KEY = key;
-    const el = document.getElementById('connStatus');
-    el.textContent = '⏳ Menguji...';
-    try {
-        await sbFetch('gojukai_settings?limit=1');
-        el.textContent = '✅ Berhasil terhubung!';
-        el.style.color = 'green';
-    } catch (e) {
-        el.textContent = '❌ Gagal: ' + e.message;
-        el.style.color = 'red';
-    }
-};
 
 // ==================== UI SECTIONS ====================
 const landingDiv = document.getElementById('landingSection');
@@ -2358,13 +2158,6 @@ async function uploadToImgbb(file) {
     if (!json.success) throw new Error('imgbb upload failed: ' + JSON.stringify(json.error));
     return json.data.url; // returns direct image URL
 }
-
-// ==================== GEAR BUTTON + SUPABASE MODAL ==================
-document.getElementById('gearBtn').onclick = () => document.getElementById('sbModal').classList.remove('hidden');
-document.getElementById('closeSbModal').onclick = () => document.getElementById('sbModal').classList.add('hidden');
-document.getElementById('sbModal').addEventListener('click', (e) => {
-    if (e.target === document.getElementById('sbModal')) document.getElementById('sbModal').classList.add('hidden');
-});
 
 // Sync hero logo with landingLogo updates — patched after definition
 const _patchHeroLogo = () => {
