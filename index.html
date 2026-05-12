@@ -678,6 +678,37 @@ const defaultSilabus = {
 };
 silabusData = defaultSilabus;
 
+// ==================== SILABUS SAVE/LOAD ====================
+async function saveSilabusToSupabase() {
+    for (const sabuk in silabusData) {
+        const data = {
+            sabuk,
+            deskripsi: silabusData[sabuk].deskripsi || '',
+            rpp: JSON.stringify(silabusData[sabuk].rpp || [])
+        };
+        const existing = await sb.select('gojukai_silabus', `sabuk=eq.${encodeURIComponent(sabuk)}`);
+        if (existing && existing.length > 0) {
+            await sb.update('gojukai_silabus', existing[0].id, data);
+        } else {
+            await sb.insert('gojukai_silabus', data);
+        }
+    }
+}
+
+async function loadSilabusFromSupabase() {
+    try {
+        const rows = await sb.select('gojukai_silabus', 'select=*');
+        if (rows && rows.length > 0) {
+            rows.forEach(r => {
+                silabusData[r.sabuk] = {
+                    deskripsi: r.deskripsi,
+                    rpp: typeof r.rpp === 'string' ? JSON.parse(r.rpp) : (r.rpp || [])
+                };
+            });
+        }
+    } catch(e) { console.warn('Silabus load failed, using default:', e); }
+}
+
 // ==================== LOADING INDICATOR ====================
 function showLoading(msg = 'Memuat...') {
     let el = document.getElementById('loadingOverlay');
@@ -719,6 +750,9 @@ async function loadAllData() {
             teleponortu: r.teleponortu, unit: r.unit, sabukAwal: r.sabuk_awal,
             foto: r.foto, tanggal: r.tanggal, username: r.username, password: r.password
         }));
+
+        // Silabus RPP
+        await loadSilabusFromSupabase();
 
         // Units
         const units = await sb.select('gojukai_units', 'select=*');
@@ -1713,6 +1747,96 @@ function showAdminPanel(section) {
             document.getElementById('videoKataAdminList').innerHTML = html;
         }
         renderVideoKataAdmin();
+        // ── RPP ADMIN EDITOR ──────────────────────────────────────────────
+        const sabukList = Object.keys(silabusData);
+        let activeRppSabuk = sabukList[0] || 'Putih';
+
+        function renderRppAdminTabs() {
+            document.getElementById('rppAdminTabs').innerHTML = sabukList.map(s =>
+                `<button class="sabuk-tab rpp-tab${s===activeRppSabuk?' active':''}" data-sabuk="${s}">${s}</button>`
+            ).join('');
+            document.querySelectorAll('.rpp-tab').forEach(btn => {
+                btn.onclick = () => { activeRppSabuk = btn.dataset.sabuk; renderRppAdminTabs(); renderRppAdminEditor(); };
+            });
+        }
+
+        function renderRppAdminEditor() {
+            const sd = silabusData[activeRppSabuk];
+            const rpp = sd ? (sd.rpp || []) : [];
+            let rows = rpp.map((r,i) => `
+                <tr>
+                  <td style="text-align:center;font-weight:600;width:50px">${r.minggu}</td>
+                  <td><input type="text" class="rpp-tema" data-i="${i}" value="${r.tema.replace(/"/g,'&quot;')}" style="width:100%;padding:5px 8px;font-size:.82rem"></td>
+                  <td><textarea class="rpp-materi" data-i="${i}" style="width:100%;padding:5px 8px;font-size:.78rem;min-height:52px;resize:vertical">${r.materi}</textarea></td>
+                  <td style="text-align:center">
+                    <button class="rpp-del-btn btn-danger" data-i="${i}" style="padding:3px 8px;font-size:.62rem">✕</button>
+                  </td>
+                </tr>`).join('');
+
+            document.getElementById('rppAdminContent').innerHTML = `
+              <div class="card" style="padding:16px 18px;margin-bottom:10px">
+                <label>Deskripsi Sabuk ${activeRppSabuk}</label>
+                <textarea id="rppDeskripsiInput" style="min-height:58px;margin-bottom:10px">${sd ? sd.deskripsi : ''}</textarea>
+                <div class="table-wrapper">
+                  <table style="width:100%">
+                    <thead><tr>
+                      <th style="width:50px">Minggu</th>
+                      <th>Tema</th>
+                      <th>Materi Latihan</th>
+                      <th style="width:40px"></th>
+                    </tr></thead>
+                    <tbody id="rppEditorBody">${rows}</tbody>
+                  </table>
+                </div>
+                <button id="rppTambahMingguBtn" class="btn-success" style="margin-top:10px;padding:6px 16px;font-size:.7rem">➕ Tambah Minggu</button>
+              </div>`;
+
+            // Delete row
+            document.querySelectorAll('.rpp-del-btn').forEach(btn => {
+                btn.onclick = () => {
+                    silabusData[activeRppSabuk].rpp.splice(parseInt(btn.dataset.i), 1);
+                    renderRppAdminEditor();
+                };
+            });
+
+            // Add week
+            document.getElementById('rppTambahMingguBtn').onclick = () => {
+                const currentRpp = silabusData[activeRppSabuk].rpp || [];
+                const nextMinggu = currentRpp.length + 1;
+                currentRpp.push({ minggu: nextMinggu, tema: `Tema Minggu ${nextMinggu}`, materi: 'Isi materi latihan...' });
+                silabusData[activeRppSabuk].rpp = currentRpp;
+                renderRppAdminEditor();
+            };
+        }
+
+        renderRppAdminTabs();
+        renderRppAdminEditor();
+
+        // Collect edits before save
+        function collectRppEdits() {
+            const deskEl = document.getElementById('rppDeskripsiInput');
+            if (deskEl) silabusData[activeRppSabuk].deskripsi = deskEl.value;
+            document.querySelectorAll('.rpp-tema').forEach(el => {
+                const i = parseInt(el.dataset.i);
+                if (silabusData[activeRppSabuk].rpp[i]) silabusData[activeRppSabuk].rpp[i].tema = el.value;
+            });
+            document.querySelectorAll('.rpp-materi').forEach(el => {
+                const i = parseInt(el.dataset.i);
+                if (silabusData[activeRppSabuk].rpp[i]) silabusData[activeRppSabuk].rpp[i].materi = el.value;
+            });
+        }
+
+        document.getElementById('simpanRPPBtn').onclick = async () => {
+            collectRppEdits();
+            showLoading('Menyimpan RPP...');
+            try {
+                await saveSilabusToSupabase();
+                alert('✅ RPP berhasil disimpan ke database!');
+            } catch(e) { alert('Gagal simpan RPP: ' + e.message); }
+            finally { hideLoading(); }
+        };
+        // ── END RPP ADMIN EDITOR ───────────────────────────────────────────
+
         document.getElementById('simpanVideoKataBtn').onclick = async () => {
             showLoading('Menyimpan...');
             try {
