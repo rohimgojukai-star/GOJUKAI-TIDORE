@@ -1698,7 +1698,13 @@ function showAdminPanel(section) {
         panel.innerHTML = `<h3>🔑 Kelola Zona Pelatih</h3>
             <div><label>Kode Akses Pelatih</label><input type="text" id="kodePelatihSetting" value="${kodePelatih}"><button id="simpanKodePelatihBtn" class="btn-success" style="margin-top:10px;">💾 Simpan</button></div>
             <hr><h4>🎬 Video Latihan</h4><div id="videoLatihanAdminList"></div><button id="tambahVideoLatihanBtn" class="btn-success">➕ Tambah</button>
-            <hr><h4>🥋 Video Kata</h4><div id="videoKataAdminList"></div><button id="simpanVideoKataBtn" class="btn-success">💾 Simpan Kata</button>`;
+            <hr><h4>🥋 Video Kata</h4><div id="videoKataAdminList"></div><button id="simpanVideoKataBtn" class="btn-success">💾 Simpan Kata</button>
+            <hr>
+            <h4 style="margin:14px 0 6px">📋 RPP per Sabuk (1 Semester)</h4>
+            <p style="font-size:.85rem;color:#666;margin-bottom:12px">Edit Rencana Program Pembelajaran per tingkatan sabuk.</p>
+            <div id="rppAdminTabs" class="tab-buttons" style="margin-bottom:14px;display:flex;flex-wrap:wrap;gap:8px"></div>
+            <div id="rppAdminContent"></div>
+            <button id="simpanRPPBtn" class="btn-success" style="margin-top:14px">💾 Simpan Semua RPP ke Database</button>`;
 
         function renderVideoLatihanAdmin() {
             let html = '';
