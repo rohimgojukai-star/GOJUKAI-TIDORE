@@ -181,10 +181,6 @@ body.dark .preview-content{background:var(--navy-mid)}
 /* ── Supabase banner — hidden ── */
 #supabaseConfigBanner{display:none}
 
-/* ── Hide admin & dark mode btn in member mode ── */
-body.member-mode #adminLoginBtn,
-body.member-mode #darkModeToggle { display:none !important; }
-
 /* ── DB Badge ── */
 .db-status{font-family:'Cinzel',serif;font-size:.66rem;letter-spacing:.07em;
   padding:3px 11px;border-radius:3px;margin-left:6px;text-transform:uppercase}
@@ -1073,19 +1069,13 @@ document.getElementById('doLogin').addEventListener('click', () => {
     const member = registrations.find(r => r.username === user && r.password === pass);
     if (member) {
         currentUser = { role: 'member', nama: member.nama, unit: member.unit, id: member.id, username: member.username, sabuk: member.sabukAwal };
-        document.body.classList.add('member-mode');
         hideAllSections(); memberContainer.classList.remove('hidden'); showPublicToolbar(false);
         buildMemberMenu(); showMemberContent('profil');
     } else alert('Username/password salah!');
 });
 
 document.getElementById('logoutBtnMember').addEventListener('click', () => {
-    currentUser = null;
-    document.body.classList.remove('member-mode');
-    memberContainer.classList.add('hidden');
-    hideAllSections();
-    landingDiv.classList.remove('hidden');
-    showPublicToolbar(true);
+    currentUser = null; memberContainer.classList.add('hidden'); hideAllSections(); landingDiv.classList.remove('hidden'); showPublicToolbar(true);
 });
 
 // ==================== LOGIN ADMIN ====================
@@ -1206,10 +1196,7 @@ function showMemberContent(menuId) {
         <div style="display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start;flex-wrap:wrap;" class="grid-profil">
             <div style="text-align:center">
                 ${member.foto
-                    ? `<img src="${member.foto}"
-                            style="width:110px;height:110px;object-fit:cover;border-radius:8px;border:3px solid var(--gold);box-shadow:0 4px 14px rgba(0,0,0,.18);"
-                            onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='flex';">
-                       <div style="width:110px;height:110px;border-radius:8px;border:3px solid var(--gold);background:var(--navy);align-items:center;justify-content:center;font-size:2.5rem;display:none;">🥋</div>`
+                    ? `<img src="${member.foto}" style="width:110px;height:110px;object-fit:cover;border-radius:8px;border:3px solid var(--gold);box-shadow:0 4px 14px rgba(0,0,0,.18);">`
                     : `<div style="width:110px;height:110px;border-radius:8px;border:3px solid var(--gold);background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:2.5rem;">🥋</div>`}
                 <div style="margin-top:10px;background:${sabukColor};color:${sabukTextColor};border-radius:20px;padding:5px 14px;font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.07em;font-weight:700;display:inline-block;border:2px solid rgba(0,0,0,.12);">
                     Sabuk ${member.sabukAwal || 'Putih'}
@@ -2520,7 +2507,7 @@ async function uploadToImgbb(file) {
     const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method:'POST', body:fd });
     const json = await res.json();
     if (!json.success) throw new Error('imgbb upload failed: ' + JSON.stringify(json.error));
-    return json.data.url; // returns direct image URL
+    return json.data.display_url || json.data.image?.url || json.data.url; // direct image URL
 }
 
 // Sync hero logo with landingLogo updates — patched after definition
