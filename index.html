@@ -369,6 +369,9 @@ body.dark .imgbb-note{color:var(--text-lt)}
         <div style="margin-bottom:14px"><label>Username</label><input type="text" id="loginUser" placeholder="Masukkan username"></div>
         <div style="margin-bottom:20px"><label>Password</label><input type="password" id="loginPass" placeholder="Masukkan password"></div>
         <button id="doLogin" class="btn" style="width:100%;padding:12px;font-size:.82rem">🔑 Masuk</button>
+        <div style="text-align:center;margin-top:12px">
+            <a id="lupaPasswordLink" href="#" style="font-size:.88rem;color:var(--crimson);font-family:'Cinzel',serif;letter-spacing:.05em;text-decoration:underline;">🔓 Lupa Password?</a>
+        </div>
         <button id="backToLanding2" class="btn-outline" style="width:100%;margin-top:10px">← Kembali</button>
     </div>
 
@@ -1055,6 +1058,11 @@ document.getElementById('buktiBayarUpload').addEventListener('change', (e) => {
 });
 
 // ==================== LOGIN PESERTA ====================
+document.getElementById('lupaPasswordLink').addEventListener('click', (ev) => {
+    ev.preventDefault();
+    showLupaPasswordModal('user');
+});
+
 document.getElementById('doLogin').addEventListener('click', () => {
     const user = document.getElementById('loginUser').value;
     const pass = document.getElementById('loginPass').value;
@@ -1062,7 +1070,7 @@ document.getElementById('doLogin').addEventListener('click', () => {
     if (member) {
         currentUser = { role: 'member', nama: member.nama, unit: member.unit, id: member.id, username: member.username, sabuk: member.sabukAwal };
         hideAllSections(); memberContainer.classList.remove('hidden'); showPublicToolbar(false);
-        buildMemberMenu(); showMemberContent('pengurus');
+        buildMemberMenu(); showMemberContent('profil');
     } else alert('Username/password salah!');
 });
 
@@ -1073,7 +1081,7 @@ document.getElementById('logoutBtnMember').addEventListener('click', () => {
 // ==================== LOGIN ADMIN ====================
 adminLoginBtn.onclick = () => {
     const modal = document.createElement('div'); modal.className = 'modal';
-    modal.innerHTML = `<div class="modal-content"><h3>🔐 Login Admin</h3><input type="password" id="adminPasswordInput" placeholder="Password Admin" style="margin:15px 0"><div style="display:flex; gap:10px;"><button id="submitAdminLogin" class="btn">Login</button><button id="cancelAdminLogin" class="btn-outline">Batal</button></div></div>`;
+    modal.innerHTML = `<div class="modal-content"><h3>🔐 Login Admin</h3><input type="password" id="adminPasswordInput" placeholder="Password Admin" style="margin:15px 0"><div style="display:flex; gap:10px;"><button id="submitAdminLogin" class="btn">Login</button><button id="cancelAdminLogin" class="btn-outline">Batal</button></div><div style="text-align:center;margin-top:14px"><a id="lupaPasswordAdminLink" href="#" style="font-size:.85rem;color:var(--crimson);font-family:'Cinzel',serif;letter-spacing:.05em;text-decoration:underline;">🔓 Lupa Password Admin?</a></div></div>`;
     document.body.appendChild(modal);
     document.getElementById('submitAdminLogin').onclick = () => {
         if (document.getElementById('adminPasswordInput').value === 'admin123') {
@@ -1082,6 +1090,11 @@ adminLoginBtn.onclick = () => {
         } else alert('Password admin salah!');
     };
     document.getElementById('cancelAdminLogin').onclick = () => modal.remove();
+    document.getElementById('lupaPasswordAdminLink').onclick = (ev) => {
+        ev.preventDefault();
+        modal.remove();
+        showLupaPasswordModal('admin');
+    };
 };
 document.getElementById('logoutAdminBtn').addEventListener('click', () => {
     adminPanel.classList.add('hidden'); hideAllSections(); landingDiv.classList.remove('hidden'); showPublicToolbar(true); currentUser = null;
@@ -1146,6 +1159,7 @@ document.getElementById('pelatihMenuNav').addEventListener('click', (e) => {
 // ==================== MEMBER AREA ====================
 function buildMemberMenu() {
     document.getElementById('memberMenuNav').innerHTML = `
+        <button data-menu="profil" style="background:var(--navy);color:var(--gold-lt);border-color:var(--gold)">👤 Profil Saya</button>
         <button data-menu="pengurus">📌 Pengurus</button>
         <button data-menu="adart">📜 AD/ART</button>
         <button data-menu="kurikulum">📚 Kurikulum</button>
@@ -1162,6 +1176,55 @@ function buildMemberMenu() {
 
 function showMemberContent(menuId) {
     const contentDiv = document.getElementById('memberContent');
+    // Mark active menu button
+    document.querySelectorAll('#memberMenuNav button').forEach(b => {
+        b.style.background = b.dataset.menu === menuId ? 'var(--navy)' : '';
+        b.style.color = b.dataset.menu === menuId ? 'var(--gold-lt)' : '';
+        b.style.borderColor = b.dataset.menu === menuId ? 'var(--gold)' : '';
+    });
+    if (menuId === 'profil') {
+        const member = registrations.find(r => r.id === currentUser?.id);
+        if (!member) { contentDiv.innerHTML = '<p>Data tidak ditemukan.</p>'; return; }
+        const sabukColors = { 'Putih':'#f8f8f8', 'Kuning/Orange':'#f5c842', 'Hijau':'#2ecc71', 'Biru':'#2980b9', 'Coklat':'#8B4513', 'Hitam':'#1a1a1a' };
+        const sabukColor = sabukColors[member.sabukAwal] || '#999';
+        const sabukTextColor = (member.sabukAwal === 'Putih' || member.sabukAwal === 'Kuning/Orange') ? '#333' : '#fff';
+        const statusDaftar = member.statusDaftar || 'Pending';
+        const statusColor = statusDaftar === 'Disetujui' ? '#2d7a4f' : statusDaftar === 'Ditolak' ? 'var(--crimson)' : '#c9820c';
+        const statusIcon = statusDaftar === 'Disetujui' ? '✅' : statusDaftar === 'Ditolak' ? '❌' : '⏳';
+        contentDiv.innerHTML = `
+        <h3>👤 Profil Anggota</h3>
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start;flex-wrap:wrap;" class="grid-profil">
+            <div style="text-align:center">
+                ${member.foto
+                    ? `<img src="${member.foto}" style="width:110px;height:110px;object-fit:cover;border-radius:8px;border:3px solid var(--gold);box-shadow:0 4px 14px rgba(0,0,0,.18);">`
+                    : `<div style="width:110px;height:110px;border-radius:8px;border:3px solid var(--gold);background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:2.5rem;">🥋</div>`}
+                <div style="margin-top:10px;background:${sabukColor};color:${sabukTextColor};border-radius:20px;padding:5px 14px;font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.07em;font-weight:700;display:inline-block;border:2px solid rgba(0,0,0,.12);">
+                    Sabuk ${member.sabukAwal || 'Putih'}
+                </div>
+                <div style="margin-top:8px;font-size:.82rem;color:${statusColor};font-weight:bold">${statusIcon} ${statusDaftar}</div>
+            </div>
+            <div>
+                <table style="width:100%;border-collapse:collapse;font-size:.97rem;">
+                    <tr><td style="padding:7px 10px;font-family:'Cinzel',serif;font-size:.7rem;color:var(--text-mid);width:40%;border-bottom:1px solid var(--gold-dim);">NAMA LENGKAP</td><td style="padding:7px 10px;border-bottom:1px solid var(--gold-dim);font-weight:600">${member.nama}</td></tr>
+                    <tr><td style="padding:7px 10px;font-family:'Cinzel',serif;font-size:.7rem;color:var(--text-mid);border-bottom:1px solid var(--gold-dim);">TEMPAT & TGL LAHIR</td><td style="padding:7px 10px;border-bottom:1px solid var(--gold-dim);">${member.ttl || '-'}</td></tr>
+                    <tr><td style="padding:7px 10px;font-family:'Cinzel',serif;font-size:.7rem;color:var(--text-mid);border-bottom:1px solid var(--gold-dim);">JENIS KELAMIN</td><td style="padding:7px 10px;border-bottom:1px solid var(--gold-dim);">${member.jk || '-'}</td></tr>
+                    <tr><td style="padding:7px 10px;font-family:'Cinzel',serif;font-size:.7rem;color:var(--text-mid);border-bottom:1px solid var(--gold-dim);">PEKERJAAN/SEKOLAH</td><td style="padding:7px 10px;border-bottom:1px solid var(--gold-dim);">${member.pekerjaan || '-'}</td></tr>
+                    <tr><td style="padding:7px 10px;font-family:'Cinzel',serif;font-size:.7rem;color:var(--text-mid);border-bottom:1px solid var(--gold-dim);">ALAMAT</td><td style="padding:7px 10px;border-bottom:1px solid var(--gold-dim);">${member.alamat || '-'}</td></tr>
+                    <tr><td style="padding:7px 10px;font-family:'Cinzel',serif;font-size:.7rem;color:var(--text-mid);border-bottom:1px solid var(--gold-dim);">NO. HP</td><td style="padding:7px 10px;border-bottom:1px solid var(--gold-dim);">${member.telepon || '-'}</td></tr>
+                    <tr><td style="padding:7px 10px;font-family:'Cinzel',serif;font-size:.7rem;color:var(--text-mid);border-bottom:1px solid var(--gold-dim);">UNIT LATIHAN</td><td style="padding:7px 10px;border-bottom:1px solid var(--gold-dim);">${member.unit || '-'}</td></tr>
+                    <tr><td style="padding:7px 10px;font-family:'Cinzel',serif;font-size:.7rem;color:var(--text-mid);border-bottom:1px solid var(--gold-dim);">USERNAME</td><td style="padding:7px 10px;border-bottom:1px solid var(--gold-dim);font-family:monospace;">${member.username}</td></tr>
+                    <tr><td style="padding:7px 10px;font-family:'Cinzel',serif;font-size:.7rem;color:var(--text-mid);border-bottom:1px solid var(--gold-dim);">TANGGAL DAFTAR</td><td style="padding:7px 10px;border-bottom:1px solid var(--gold-dim);">${member.tanggal || '-'}</td></tr>
+                    <tr><td style="padding:7px 10px;font-family:'Cinzel',serif;font-size:.7rem;color:var(--text-mid);">NAMA ORANG TUA/WALI</td><td style="padding:7px 10px;">${member.ortu || '-'}</td></tr>
+                </table>
+                <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+                    <button id="downloadKartuBtn" class="btn-success" style="font-size:.73rem;padding:8px 16px">📄 Download Formulir</button>
+                </div>
+            </div>
+        </div>
+        <style>.grid-profil{grid-template-columns:auto 1fr}@media(max-width:500px){.grid-profil{grid-template-columns:1fr!important}}</style>`;
+        document.getElementById('downloadKartuBtn').onclick = () => downloadDoc(member);
+        return;
+    }
     if (menuId === 'pengurus') {
         let html = '<h3>📌 Pengurus Cabang Tidore</h3>';
         if (uploadedFiles.pengurus.length) uploadedFiles.pengurus.forEach(f => html += `<p><a href="${f.url}" target="_blank">📄 ${f.name}</a></p>`);
@@ -2231,9 +2294,196 @@ function uploadFile(category, fileInputId, listElementId) {
 }
 
 function downloadDoc(m) {
-    const html = `<html><body><h2>Data Anggota ${m.nama}</h2><p>Unit: ${m.unit}</p><p>Sabuk: ${m.sabukAwal}</p><p>Username: ${m.username}</p><p>TTL: ${m.ttl}</p><p>Telepon: ${m.telepon}</p>${m.foto?`<img src="${m.foto}" style="max-width:200px;">`:''}  </body></html>`;
-    const blob = new Blob([html], { type: 'application/msword' });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Anggota_${m.nama}.doc`; a.click(); URL.revokeObjectURL(a.href);
+    const fotoBlock = m.foto
+        ? `<img src="${m.foto}" style="width:90px;height:120px;object-fit:cover;border:1px solid #333;">`
+        : `<div style="width:90px;height:120px;border:1px solid #333;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#666;text-align:center;">FOTO<br>3 x 4</div>`;
+    const html = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">
+<style>
+  body{font-family:'Times New Roman',serif;margin:0;padding:20px;font-size:12pt;color:#000;}
+  .kop{text-align:center;border-bottom:3px double #000;padding-bottom:10px;margin-bottom:16px;}
+  .kop h2{font-size:13pt;margin:2px 0;letter-spacing:.03em;}
+  .kop h3{font-size:11pt;margin:2px 0;font-weight:normal;font-style:italic;}
+  .kop .sub{font-size:9pt;margin:3px 0;}
+  .form-no{font-size:10pt;margin-bottom:10px;}
+  .judul{text-align:center;font-size:14pt;font-weight:bold;text-decoration:underline;margin:10px 0 16px;}
+  table.data{width:100%;border-collapse:collapse;margin-bottom:12px;}
+  table.data td{padding:5px 8px;vertical-align:top;font-size:11pt;}
+  table.data td:first-child{width:38%;}
+  .kesanggupan{font-size:10.5pt;margin-bottom:12px;}
+  .kesanggupan p{margin:4px 0;}
+  .janji{font-size:10.5pt;margin-bottom:14px;}
+  .janji ol{margin:4px 0;padding-left:20px;}
+  .ttd{display:flex;justify-content:space-between;margin-top:20px;font-size:11pt;}
+  .ttd .blok{text-align:center;width:200px;}
+  .ttd .ttd-line{margin-top:60px;border-top:1px solid #000;padding-top:4px;}
+  .foto-wrap{float:right;margin:-10px 0 10px 16px;text-align:center;}
+  .sabuk-badge{display:inline-block;padding:3px 12px;border:1px solid #333;border-radius:3px;font-size:10pt;margin-top:6px;}
+</style>
+</head><body>
+<div class="kop">
+  <h2>PENGURUS BESAR</h2>
+  <h2>KARATE-DO GOJUKAI INDONESIA</h2>
+  <h3>THE IKGA (INTERNATIONAL KARATE-DO GOJUKAI ASSOCIATION)</h3>
+  <div class="sub">Sekretariat : Jalan Wijaya II Nomor 35 Kebayoran Baru Jakarta Selatan 12160</div>
+  <div class="sub">Telpon 021-7202323, Faks 021-7250671 &nbsp;|&nbsp; email : pbgojukai2017@gmail.com</div>
+</div>
+<div class="form-no"><strong>Form G.1</strong></div>
+<div class="judul">FORMULIR PENDAFTARAN ANGGOTA</div>
+
+<div class="foto-wrap">
+  ${fotoBlock}
+  <div class="sabuk-badge">Sabuk ${m.sabukAwal || 'Putih'}</div>
+</div>
+
+<p style="margin-bottom:6px">Yang bertanda tangan dibawah ini :</p>
+<table class="data">
+  <tr><td>Nama Lengkap</td><td>: <strong>${m.nama || '-'}</strong></td></tr>
+  <tr><td>Tempat & Tanggal Lahir</td><td>: ${m.ttl || '-'}</td></tr>
+  <tr><td>Jenis Kelamin</td><td>: ${m.jk || '-'}</td></tr>
+  <tr><td>Pekerjaan / Sekolah</td><td>: ${m.pekerjaan || '-'}</td></tr>
+  <tr><td>Alamat Rumah</td><td>: ${m.alamat || '-'}</td></tr>
+  <tr><td>No. Telepon / HP</td><td>: ${m.telepon || '-'}</td></tr>
+  <tr><td>Nama Orang Tua / Wali</td><td>: ${m.ortu || '-'}</td></tr>
+  <tr><td>Pekerjaan Orang Tua</td><td>: ${m.pekerjaanortu || '-'}</td></tr>
+  <tr><td>Alamat Orang Tua</td><td>: ${m.alamatortu || '-'}</td></tr>
+  <tr><td>No. Telepon Orang Tua</td><td>: ${m.teleponortu || '-'}</td></tr>
+  <tr><td>Unit Latihan</td><td>: ${m.unit || '-'}</td></tr>
+  <tr><td>Tanggal Pendaftaran</td><td>: ${m.tanggal || '-'}</td></tr>
+</table>
+<div style="clear:both"></div>
+
+<div class="kesanggupan">
+  <p>Dengan ini saya mendaftarkan diri untuk mengikuti latihan <strong>KARATE-DO GOJUKAI INDONESIA</strong>, Cabang/Unit <strong>${m.unit || '.................'}</strong>. Dan untuk ini saya sanggup menaati peraturan sebagaimana tercantum di bawah ini :</p>
+  <p><strong>Kesanggupan :</strong></p>
+  <p>1. Tunduk terhadap segala peraturan yang dimuat dalam Anggaran Dasar dan Anggaran Rumah Tangga (AD/ART GOJUKAI) serta peraturan yang berlaku.</p>
+  <p>2. Sanggup dikenakan sanksi administratif/diberhentikan dari keanggotaan KARATE-DO GOJUKAI INDONESIA, apabila dikemudian hari melakukan tindakan yang merusak Harkat dan Martabat Karate-Do Gojukai.</p>
+</div>
+
+<div class="janji">
+  <p><strong>Janji Karate-Do Goju :</strong></p>
+  <p>Kami merasa bersyukur kepada Tuhan Yang Maha Esa, dapat mempelajari Karate-DO Goju dan berjanji :</p>
+  <ol>
+    <li>Mempelajari Karate-Do hanya untuk tujuan mulia.</li>
+    <li>Mempelajari Karate-Do dengan semangat dan jiwa ksatria.</li>
+    <li>Menjunjung tinggi nama baik perguruan dalam ucapan dan tindakan.</li>
+  </ol>
+</div>
+
+<p style="font-size:10.5pt">Demikian formulir pendaftaran ini saya tanda tangani tanpa paksaan dari siapapun, untuk dipergunakan sebagai syarat menjadi anggota.</p>
+
+<div class="ttd">
+  <div class="blok">
+    <div>Mengetahui ;</div>
+    <div>Orang Tua / Wali,</div>
+    <div class="ttd-line">${m.ortu || '...........................'}</div>
+  </div>
+  <div class="blok">
+    <div>Tidore Kepulauan, ${m.tanggal ? m.tanggal.split(',')[0] : new Date().toLocaleDateString('id-ID')}</div>
+    <div>Pendaftar,</div>
+    <div class="ttd-line">${m.nama || '...........................'}</div>
+  </div>
+</div>
+
+<div style="margin-top:20px;font-size:9.5pt;border-top:1px solid #ccc;padding-top:8px;">
+  <strong>Catatan :</strong><br>
+  • Harap ditulis dengan huruf balok.<br>
+  • Bagi calon anggota yang berusia di bawah 17 tahun harus diketahui orang tua/wali.<br>
+  • Username: <strong>${m.username}</strong> &nbsp;|&nbsp; Status: <strong>${m.statusDaftar || 'Pending'}</strong>
+</div>
+</body></html>`;
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `Formulir_Pendaftaran_${m.nama.replace(/\s+/g,'_')}.html`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
+
+// ==================== LUPA PASSWORD ====================
+function showLupaPasswordModal(mode) {
+    const isAdmin = mode === 'admin';
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    if (isAdmin) {
+        modal.innerHTML = `
+        <div class="modal-content">
+            <h3>🔓 Reset Password Admin</h3>
+            <p style="font-size:.9rem;margin:10px 0 16px;opacity:.7">Masukkan kode OTP admin untuk melihat & mengubah password.</p>
+            <div style="margin-bottom:12px"><label>Kode OTP Admin</label><input type="text" id="otpAdminInput" placeholder="Masukkan kode OTP"></div>
+            <div id="adminPassReveal" style="display:none">
+                <div style="margin-bottom:12px"><label>Password Admin Saat Ini</label><input type="text" id="currentAdminPass" readonly style="background:rgba(201,168,76,.08);color:var(--gold);"></div>
+                <div style="margin-bottom:12px"><label>Password Admin Baru</label><input type="password" id="newAdminPass" placeholder="Password baru"></div>
+                <button id="gantiAdminPassBtn" class="btn-success" style="margin-bottom:8px">💾 Simpan Password Baru</button>
+            </div>
+            <div id="otpAdminMsg" style="color:var(--crimson);font-size:.88rem;margin-bottom:10px"></div>
+            <div style="display:flex;gap:10px">
+                <button id="cekOtpAdminBtn" class="btn">🔍 Verifikasi OTP</button>
+                <button id="batalLupaAdminBtn" class="btn-outline">Batal</button>
+            </div>
+        </div>`;
+        document.body.appendChild(modal);
+        document.getElementById('batalLupaAdminBtn').onclick = () => modal.remove();
+        document.getElementById('cekOtpAdminBtn').onclick = async () => {
+            const otp = document.getElementById('otpAdminInput').value.trim();
+            // OTP admin = kode pelatih (shared secret) + "ADMIN" suffix
+            const expectedOtp = (kodePelatih + 'ADMIN').toUpperCase();
+            if (otp.toUpperCase() === expectedOtp) {
+                document.getElementById('adminPassReveal').style.display = 'block';
+                document.getElementById('currentAdminPass').value = 'admin123';
+                document.getElementById('otpAdminMsg').style.color = '#2d7a4f';
+                document.getElementById('otpAdminMsg').textContent = '✅ OTP benar! Password ditampilkan.';
+            } else {
+                document.getElementById('otpAdminMsg').style.color = 'var(--crimson)';
+                document.getElementById('otpAdminMsg').textContent = '❌ OTP salah. Hubungi pengurus cabang.';
+            }
+        };
+        document.getElementById('gantiAdminPassBtn').onclick = () => {
+            const newPass = document.getElementById('newAdminPass').value.trim();
+            if (!newPass) { alert('Isi password baru!'); return; }
+            document.getElementById('otpAdminMsg').style.color = '#2d7a4f';
+            document.getElementById('otpAdminMsg').textContent = '⚠️ Password admin tertanam di kode. Hubungi pengembang untuk mengubah secara permanen.';
+        };
+    } else {
+        modal.innerHTML = `
+        <div class="modal-content">
+            <h3>🔓 Lupa Password Peserta</h3>
+            <p style="font-size:.9rem;margin:10px 0 16px;opacity:.7">Masukkan username & nama lengkap yang terdaftar untuk melihat password Anda.</p>
+            <div style="margin-bottom:12px"><label>Username</label><input type="text" id="lupaUsernameInput" placeholder="Username Anda"></div>
+            <div style="margin-bottom:12px"><label>Nama Lengkap</label><input type="text" id="lupaNamaInput" placeholder="Nama lengkap sesuai pendaftaran"></div>
+            <div id="lupaPassResult" style="display:none;margin-bottom:12px">
+                <div style="background:rgba(45,122,79,.1);border:1px solid #2d7a4f;border-radius:6px;padding:14px">
+                    <p style="margin-bottom:6px;font-weight:bold;color:#2d7a4f;">✅ Data ditemukan!</p>
+                    <p style="margin-bottom:4px;"><strong>Username:</strong> <span id="lupaRevealUser"></span></p>
+                    <p><strong>Password:</strong> <span id="lupaRevealPass" style="font-family:monospace;font-size:1.05rem;color:var(--crimson);"></span></p>
+                </div>
+            </div>
+            <div id="lupaPassMsg" style="color:var(--crimson);font-size:.88rem;margin-bottom:10px"></div>
+            <div style="display:flex;gap:10px">
+                <button id="cariPasswordBtn" class="btn">🔍 Cari Password</button>
+                <button id="batalLupaBtn" class="btn-outline">Batal</button>
+            </div>
+        </div>`;
+        document.body.appendChild(modal);
+        document.getElementById('batalLupaBtn').onclick = () => modal.remove();
+        document.getElementById('cariPasswordBtn').onclick = () => {
+            const uname = document.getElementById('lupaUsernameInput').value.trim().toLowerCase();
+            const nama = document.getElementById('lupaNamaInput').value.trim().toLowerCase();
+            if (!uname || !nama) { document.getElementById('lupaPassMsg').textContent = '⚠️ Isi username dan nama!'; return; }
+            const member = registrations.find(r =>
+                r.username.toLowerCase() === uname &&
+                r.nama.toLowerCase().includes(nama)
+            );
+            if (member) {
+                document.getElementById('lupaRevealUser').textContent = member.username;
+                document.getElementById('lupaRevealPass').textContent = member.password;
+                document.getElementById('lupaPassResult').style.display = 'block';
+                document.getElementById('lupaPassMsg').textContent = '';
+            } else {
+                document.getElementById('lupaPassResult').style.display = 'none';
+                document.getElementById('lupaPassMsg').textContent = '❌ Data tidak ditemukan. Periksa username & nama Anda.';
+            }
+        };
+    }
 }
 
 // ==================== INIT ====================
