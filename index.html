@@ -1215,7 +1215,7 @@ function showMemberContent(menuId) {
             <div style="text-align:center">
                 <div id="fotoProfilWrap" style="position:relative;display:inline-block;">
                     ${(member.foto && !isFotoBase64)
-                        ? `<img id="fotoProfilImg" src="${member.foto}" onerror="this.onerror=null;this.style.display='none';document.getElementById('fotoProfilPlaceholder').style.display='flex';" style="width:110px;height:110px;object-fit:cover;border-radius:8px;border:3px solid var(--gold);box-shadow:0 4px 14px rgba(0,0,0,.18);display:block;">`
+                        ? `<img id="fotoProfilImg" src="${member.foto}?t=${Date.now()}" onerror="this.remove();document.getElementById('fotoProfilPlaceholder').style.display='flex';" style="width:110px;height:110px;object-fit:cover;border-radius:8px;border:3px solid var(--gold);box-shadow:0 4px 14px rgba(0,0,0,.18);display:block;">`
                         : ''}
                     <div id="fotoProfilPlaceholder" style="width:110px;height:110px;border-radius:8px;border:3px solid var(--gold);background:var(--navy);display:${(member.foto && !isFotoBase64) ? 'none' : 'flex'};align-items:center;justify-content:center;font-size:2.5rem;">🥋</div>
                 </div>
@@ -1263,43 +1263,54 @@ function showMemberContent(menuId) {
                 return;
             }
             gantiProfilStatus.style.color = 'var(--text-mid)';
-            gantiProfilStatus.textContent = '⏳ Mengupload foto...';
-            // Show local preview immediately
+            gantiProfilStatus.textContent = '⏳ Mengupload foto ke server...';
+
+            // Helper: create a fresh <img> element (solves broken-image-won't-reload issue)
+            function setProfilImg(src) {
+                const wrap = document.getElementById('fotoProfilWrap');
+                const placeholder = document.getElementById('fotoProfilPlaceholder');
+                // Remove any existing img
+                const old = document.getElementById('fotoProfilImg');
+                if (old) old.remove();
+                // Create brand-new img element
+                const newImg = document.createElement('img');
+                newImg.id = 'fotoProfilImg';
+                newImg.src = src;
+                newImg.style.cssText = 'width:110px;height:110px;object-fit:cover;border-radius:8px;border:3px solid var(--gold);box-shadow:0 4px 14px rgba(0,0,0,.18);display:block;';
+                newImg.onerror = function() {
+                    this.remove();
+                    if (placeholder) placeholder.style.display = 'flex';
+                };
+                if (placeholder) placeholder.style.display = 'none';
+                wrap.insertBefore(newImg, wrap.firstChild);
+            }
+
+            // Step 1: Show local preview immediately via base64
             const reader = new FileReader();
-            reader.onload = (ev) => {
-                const imgEl = document.getElementById('fotoProfilImg');
-                const placeholderEl = document.getElementById('fotoProfilPlaceholder');
-                if (imgEl) { imgEl.src = ev.target.result; imgEl.style.display = 'block'; }
-                else {
-                    // Create img element if it didn't exist before
-                    const newImg = document.createElement('img');
-                    newImg.id = 'fotoProfilImg';
-                    newImg.src = ev.target.result;
-                    newImg.style.cssText = 'width:110px;height:110px;object-fit:cover;border-radius:8px;border:3px solid var(--gold);box-shadow:0 4px 14px rgba(0,0,0,.18);display:block;';
-                    newImg.onerror = function(){ this.style.display='none'; if(placeholderEl) placeholderEl.style.display='flex'; };
-                    document.getElementById('fotoProfilWrap').insertBefore(newImg, document.getElementById('fotoProfilWrap').firstChild);
-                }
-                if (placeholderEl) placeholderEl.style.display = 'none';
-            };
+            reader.onload = (ev) => setProfilImg(ev.target.result);
             reader.readAsDataURL(file);
+
             try {
+                // Step 2: Upload to imgbb
                 const url = await uploadToImgbb(file);
-                // Update member object in memory
+
+                // Step 3: Replace preview with imgbb URL (fresh element, no broken-state issue)
+                setProfilImg(url);
+
+                // Step 4: Update memory
                 const memberIdx = registrations.findIndex(r => r.id === currentUser?.id);
                 if (memberIdx !== -1) {
                     registrations[memberIdx].foto = url;
-                    // Update displayed image to imgbb URL
-                    const imgEl = document.getElementById('fotoProfilImg');
-                    if (imgEl) imgEl.src = url;
-                    // Save to Supabase
+
+                    // Step 5: Save ONLY the foto field to Supabase via PATCH (not full upsert)
                     showLoading('Menyimpan foto...');
                     try {
-                        await saveRegistrations(registrations[memberIdx]);
+                        await sb.update('gojukai_pendaftar', registrations[memberIdx].id, { foto: url });
                         gantiProfilStatus.style.color = '#2d7a4f';
                         gantiProfilStatus.textContent = '✅ Foto berhasil disimpan!';
                     } catch(saveErr) {
                         gantiProfilStatus.style.color = 'var(--crimson)';
-                        gantiProfilStatus.textContent = '⚠️ Upload OK, gagal simpan: ' + saveErr.message;
+                        gantiProfilStatus.textContent = '⚠️ Upload OK tapi gagal simpan: ' + saveErr.message;
                     } finally { hideLoading(); }
                 }
             } catch(err) {
@@ -2591,7 +2602,14 @@ async function uploadToImgbb(file) {
     const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method:'POST', body:fd });
     const json = await res.json();
     if (!json.success) throw new Error('imgbb upload failed: ' + JSON.stringify(json.error));
-    return json.data.display_url || json.data.image?.url || json.data.url; // direct image URL
+    // imgbb response: data.image.url = direct .jpg URL (correct for <img src>)
+    // data.display_url / data.url = HTML viewer page (WRONG for <img src>)
+    const directUrl = (json.data.image && json.data.image.url)
+        || (json.data.medium && json.data.medium.url)
+        || (json.data.thumb && json.data.thumb.url);
+    if (!directUrl) throw new Error('imgbb: URL gambar tidak ditemukan. Response: ' + JSON.stringify(json.data));
+    console.log('[imgbb] Direct URL:', directUrl);
+    return directUrl;
 }
 
 // Sync hero logo with landingLogo updates — patched after definition
