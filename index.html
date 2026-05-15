@@ -1035,14 +1035,30 @@ document.getElementById('registrationForm').addEventListener('submit', async (e)
         }
     };
     if (fotoInput.files.length) {
-        // Use imgbb URL if already uploaded, else fallback to base64
+        // Use imgbb URL if already uploaded
         const cachedUrl = fotoPreview.dataset && fotoPreview.dataset.imgbbUrl;
         if (cachedUrl) {
             simpan(cachedUrl);
+        } else if (fotoPreview.style.opacity === '0.5') {
+            // Still uploading
+            alert('⏳ Foto sedang diupload, harap tunggu sebentar lalu coba daftar lagi.');
         } else {
-            const fr = new FileReader();
-            fr.onload = (e2) => simpan(e2.target.result);
-            fr.readAsDataURL(fotoInput.files[0]);
+            // Upload failed — retry once
+            const noteEl = fotoInput.parentElement.querySelector('.imgbb-note') || fotoInput.nextElementSibling;
+            if (noteEl) { noteEl.style.color = 'var(--text-mid)'; noteEl.textContent = '⏳ Mengupload ulang foto...'; }
+            showLoading('Mengupload foto...');
+            try {
+                const url = await uploadToImgbb(fotoInput.files[0]);
+                fotoPreview.dataset.imgbbUrl = url;
+                if (noteEl) { noteEl.style.color = '#2d7a4f'; noteEl.textContent = '✅ Foto berhasil diupload!'; }
+                hideLoading();
+                simpan(url);
+            } catch(retryErr) {
+                hideLoading();
+                if (noteEl) { noteEl.style.color = 'var(--crimson)'; noteEl.textContent = '❌ Upload foto gagal. Periksa koneksi internet.'; }
+                if (!confirm('⚠️ Upload foto gagal. Daftar tanpa foto? (Foto bisa ditambahkan nanti dari profil)')) return;
+                simpan('');
+            }
         }
     } else simpan('');
 });
@@ -1191,14 +1207,24 @@ function showMemberContent(menuId) {
         const statusDaftar = member.statusDaftar || 'Pending';
         const statusColor = statusDaftar === 'Disetujui' ? '#2d7a4f' : statusDaftar === 'Ditolak' ? 'var(--crimson)' : '#c9820c';
         const statusIcon = statusDaftar === 'Disetujui' ? '✅' : statusDaftar === 'Ditolak' ? '❌' : '⏳';
+        const isFotoBase64 = member.foto && member.foto.startsWith('data:');
         contentDiv.innerHTML = `
         <h3>👤 Profil Anggota</h3>
+        ${isFotoBase64 ? `<div style="background:rgba(201,168,76,.12);border:1px solid var(--gold);border-radius:4px;padding:10px 14px;margin-bottom:14px;font-size:.88rem;color:var(--text-mid);">⚠️ Foto Anda tersimpan dalam format lama. Silakan <strong>upload ulang foto</strong> menggunakan tombol "Ganti Foto" di bawah agar tersimpan dengan benar.</div>` : ''}
         <div style="display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start;flex-wrap:wrap;" class="grid-profil">
             <div style="text-align:center">
-                ${member.foto
-                    ? `<img src="${member.foto}" style="width:110px;height:110px;object-fit:cover;border-radius:8px;border:3px solid var(--gold);box-shadow:0 4px 14px rgba(0,0,0,.18);">`
-                    : `<div style="width:110px;height:110px;border-radius:8px;border:3px solid var(--gold);background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:2.5rem;">🥋</div>`}
-                <div style="margin-top:10px;background:${sabukColor};color:${sabukTextColor};border-radius:20px;padding:5px 14px;font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.07em;font-weight:700;display:inline-block;border:2px solid rgba(0,0,0,.12);">
+                <div id="fotoProfilWrap" style="position:relative;display:inline-block;">
+                    ${(member.foto && !isFotoBase64)
+                        ? `<img id="fotoProfilImg" src="${member.foto}" onerror="this.onerror=null;this.style.display='none';document.getElementById('fotoProfilPlaceholder').style.display='flex';" style="width:110px;height:110px;object-fit:cover;border-radius:8px;border:3px solid var(--gold);box-shadow:0 4px 14px rgba(0,0,0,.18);display:block;">`
+                        : ''}
+                    <div id="fotoProfilPlaceholder" style="width:110px;height:110px;border-radius:8px;border:3px solid var(--gold);background:var(--navy);display:${(member.foto && !isFotoBase64) ? 'none' : 'flex'};align-items:center;justify-content:center;font-size:2.5rem;">🥋</div>
+                </div>
+                <div style="margin-top:8px">
+                    <label for="gantiProfilFoto" style="cursor:pointer;font-size:.7rem;padding:5px 12px;background:var(--navy);color:var(--gold-lt);border:1px solid var(--gold);border-radius:4px;font-family:'Cinzel',serif;letter-spacing:.07em;display:inline-block;">📷 Ganti Foto</label>
+                    <input type="file" id="gantiProfilFoto" accept="image/*" style="display:none">
+                    <div id="gantiProfilStatus" style="font-size:.75rem;color:var(--text-mid);margin-top:4px;font-style:italic;min-height:18px"></div>
+                </div>
+                <div style="margin-top:8px;background:${sabukColor};color:${sabukTextColor};border-radius:20px;padding:5px 14px;font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.07em;font-weight:700;display:inline-block;border:2px solid rgba(0,0,0,.12);">
                     Sabuk ${member.sabukAwal || 'Putih'}
                 </div>
                 <div style="margin-top:8px;font-size:.82rem;color:${statusColor};font-weight:bold">${statusIcon} ${statusDaftar}</div>
@@ -1223,6 +1249,64 @@ function showMemberContent(menuId) {
         </div>
         <style>.grid-profil{grid-template-columns:auto 1fr}@media(max-width:500px){.grid-profil{grid-template-columns:1fr!important}}</style>`;
         document.getElementById('downloadKartuBtn').onclick = () => downloadDoc(member);
+
+        // Ganti foto profil
+        const gantiProfilFoto = document.getElementById('gantiProfilFoto');
+        const gantiProfilStatus = document.getElementById('gantiProfilStatus');
+        gantiProfilFoto.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            // Validate size (max 4MB for imgbb free)
+            if (file.size > 4 * 1024 * 1024) {
+                gantiProfilStatus.style.color = 'var(--crimson)';
+                gantiProfilStatus.textContent = '❌ Foto terlalu besar (maks 4MB)';
+                return;
+            }
+            gantiProfilStatus.style.color = 'var(--text-mid)';
+            gantiProfilStatus.textContent = '⏳ Mengupload foto...';
+            // Show local preview immediately
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const imgEl = document.getElementById('fotoProfilImg');
+                const placeholderEl = document.getElementById('fotoProfilPlaceholder');
+                if (imgEl) { imgEl.src = ev.target.result; imgEl.style.display = 'block'; }
+                else {
+                    // Create img element if it didn't exist before
+                    const newImg = document.createElement('img');
+                    newImg.id = 'fotoProfilImg';
+                    newImg.src = ev.target.result;
+                    newImg.style.cssText = 'width:110px;height:110px;object-fit:cover;border-radius:8px;border:3px solid var(--gold);box-shadow:0 4px 14px rgba(0,0,0,.18);display:block;';
+                    newImg.onerror = function(){ this.style.display='none'; if(placeholderEl) placeholderEl.style.display='flex'; };
+                    document.getElementById('fotoProfilWrap').insertBefore(newImg, document.getElementById('fotoProfilWrap').firstChild);
+                }
+                if (placeholderEl) placeholderEl.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+            try {
+                const url = await uploadToImgbb(file);
+                // Update member object in memory
+                const memberIdx = registrations.findIndex(r => r.id === currentUser?.id);
+                if (memberIdx !== -1) {
+                    registrations[memberIdx].foto = url;
+                    // Update displayed image to imgbb URL
+                    const imgEl = document.getElementById('fotoProfilImg');
+                    if (imgEl) imgEl.src = url;
+                    // Save to Supabase
+                    showLoading('Menyimpan foto...');
+                    try {
+                        await saveRegistrations(registrations[memberIdx]);
+                        gantiProfilStatus.style.color = '#2d7a4f';
+                        gantiProfilStatus.textContent = '✅ Foto berhasil disimpan!';
+                    } catch(saveErr) {
+                        gantiProfilStatus.style.color = 'var(--crimson)';
+                        gantiProfilStatus.textContent = '⚠️ Upload OK, gagal simpan: ' + saveErr.message;
+                    } finally { hideLoading(); }
+                }
+            } catch(err) {
+                gantiProfilStatus.style.color = 'var(--crimson)';
+                gantiProfilStatus.textContent = '❌ Upload gagal: ' + err.message;
+            }
+        });
         return;
     }
     if (menuId === 'pengurus') {
@@ -1610,7 +1694,7 @@ function showAdminPanel(section) {
                 if (m) {
                     const status = m.statusDaftar || 'Pending';
                     let previewHtml = `<h2>Data Anggota ${m.nama}</h2><p><strong>Unit:</strong> ${m.unit}</p><p><strong>Sabuk:</strong> ${m.sabukAwal}</p><p><strong>Username:</strong> ${m.username}</p><p><strong>TTL:</strong> ${m.ttl}</p><p><strong>Telepon:</strong> ${m.telepon}</p><p><strong>Status Pendaftaran:</strong> ${status}</p>`;
-                    if (m.foto) previewHtml += `<img src="${m.foto}" style="max-width:150px;border-radius:6px;margin-top:10px;">`;
+                    if (m.foto) previewHtml += `<img src="${m.foto}" onerror="this.onerror=null;this.outerHTML='<div style=\\'width:90px;height:90px;border-radius:6px;background:#1e3050;display:inline-flex;align-items:center;justify-content:center;font-size:1.8rem;margin-top:10px;\\'>🥋</div>';" style="max-width:150px;border-radius:6px;margin-top:10px;">`;
                     if (m.buktiDaftar) previewHtml += `<p style="margin-top:12px"><strong>Bukti Bayar:</strong></p><img src="${m.buktiDaftar}" style="max-width:200px;border-radius:6px;border:1px solid var(--gold-dim);">`;
                     showPreview(`Preview Data ${m.nama}`, previewHtml, () => downloadDoc(m));
                 }
@@ -2295,7 +2379,7 @@ function uploadFile(category, fileInputId, listElementId) {
 
 function downloadDoc(m) {
     const fotoBlock = m.foto
-        ? `<img src="${m.foto}" style="width:90px;height:120px;object-fit:cover;border:1px solid #333;">`
+        ? `<img src="${m.foto}" crossorigin="anonymous" onerror="this.onerror=null;this.outerHTML='<div style=\\'width:90px;height:120px;border:1px solid #333;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#666;text-align:center;\\'>FOTO<br>3 x 4</div>';" style="width:90px;height:120px;object-fit:cover;border:1px solid #333;">`
         : `<div style="width:90px;height:120px;border:1px solid #333;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#666;text-align:center;">FOTO<br>3 x 4</div>`;
     const html = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">
 <style>
@@ -2527,7 +2611,7 @@ const _patchHeroLogo = () => {
 setTimeout(_patchHeroLogo, 0);
 
 // ==================== IMGBB: FOTO UPLOAD (Registration) ====================
-// Override fotoInput change to also upload to imgbb
+// Override fotoInput change to upload to imgbb and show status
 fotoInput.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) { fotoPreview.style.display = 'none'; return; }
@@ -2535,17 +2619,22 @@ fotoInput.addEventListener('change', async (e) => {
     const reader = new FileReader();
     reader.onload = (ev) => { fotoPreview.src = ev.target.result; fotoPreview.style.display = 'block'; };
     reader.readAsDataURL(file);
-    // Upload to imgbb in background
+    // Show uploading status
+    const noteEl = fotoInput.parentElement.querySelector('.imgbb-note') || fotoInput.nextElementSibling;
+    if (noteEl) { noteEl.style.color = 'var(--text-mid)'; noteEl.textContent = '⏳ Mengupload foto ke server...'; }
+    // Upload to imgbb
     try {
         fotoPreview.style.opacity = '0.5';
         const url = await uploadToImgbb(file);
         fotoPreview.src = url;
         fotoPreview.style.opacity = '1';
         fotoPreview.dataset.imgbbUrl = url;
+        if (noteEl) { noteEl.style.color = '#2d7a4f'; noteEl.textContent = '✅ Foto berhasil diupload ke server!'; }
     } catch(err) {
-        console.warn('imgbb upload failed, using base64 fallback:', err.message);
+        console.warn('imgbb upload failed:', err.message);
         fotoPreview.style.opacity = '1';
         fotoPreview.dataset.imgbbUrl = '';
+        if (noteEl) { noteEl.style.color = 'var(--crimson)'; noteEl.textContent = '⚠️ Upload foto gagal. Coba lagi atau periksa koneksi internet.'; }
     }
 }, true); // capture phase so it runs AFTER existing listener sets base64
 
