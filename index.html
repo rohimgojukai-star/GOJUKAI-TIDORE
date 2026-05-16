@@ -343,7 +343,7 @@ body.dark .imgbb-note{color:var(--text-lt)}
                 <div><label>Sabuk Awal</label><select id="sabukAwal"><option>Putih</option><option>Kuning/Orange</option><option>Hijau</option><option>Biru</option><option>Coklat</option><option>Hitam</option></select></div>
                 <div><label>Username</label><input type="text" id="username" required placeholder="pilih username"></div>
                 <div><label>Password</label><input type="password" id="password" required placeholder="pilih password"></div>
-                <div><label>Foto 3x4</label><input type="file" id="fotoUpload" accept="image/*"><div class="imgbb-note">📤 Foto akan diupload ke freeimage.host (bebas hotlink)</div></div>
+                <div><label>Foto 3x4</label><input type="file" id="fotoUpload" accept="image/*"><div class="imgbb-note">📷 Foto akan dikompres & disimpan otomatis</div></div>
                 <div><img id="fotoPreview" style="display:none; width:90px; height:90px; object-fit:cover; border-radius:12px;"></div>
                 <div style="grid-column:1/-1">
                     <label>💰 Bukti Pembayaran Biaya Pendaftaran (Rp 100.000)</label>
@@ -973,7 +973,7 @@ logoutPelatihBtn.onclick = () => {
     document.getElementById('kodePelatihInput').value = '';
 };
 
-// fotoInput change handler: preview lokal + upload ke freeimage.host
+// fotoInput change handler: preview lokal + kompres base64
 // fotoInput.addEventListener('change', ...) — replaced
 
 // ==================== REGISTRASI ====================
@@ -998,16 +998,15 @@ document.getElementById('registrationForm').addEventListener('submit', async (e)
         buktiDaftar: '', statusDaftar: 'Pending'
     };
 
-    // Upload bukti bayar ke imgbb (hanya untuk link lihat, tidak di-embed)
+    // Upload bukti bayar ke imgbb
     const buktiBayarInput = document.getElementById('buktiBayarUpload');
     const buktiBayarPreview = document.getElementById('buktiBayarPreview');
     if (buktiBayarInput.files.length) {
-        showLoading('Mengupload bukti bayar ke imgbb...');
+        showLoading('Mengupload bukti bayar...');
         try {
             const buktiUrl = await uploadBuktiToImgbb(buktiBayarInput.files[0]);
             data.buktiDaftar = buktiUrl;
         } catch(err) {
-            console.warn('imgbb bukti gagal, fallback base64:', err.message);
             const fr3 = new FileReader();
             data.buktiDaftar = await new Promise(res => { fr3.onload = e3 => res(e3.target.result); fr3.readAsDataURL(buktiBayarInput.files[0]); });
         } finally { hideLoading(); }
@@ -1036,8 +1035,8 @@ document.getElementById('registrationForm').addEventListener('submit', async (e)
         }
     };
     if (fotoInput.files.length) {
-        // Gunakan URL freeimage.host jika sudah diupload
-        const cachedUrl = fotoPreview.dataset && fotoPreview.dataset.freeimageUrl;
+        // Gunakan base64 foto jika sudah diproses
+        const cachedUrl = fotoPreview.dataset && fotoPreview.dataset.fotoBase64;
         if (cachedUrl) {
             simpan(cachedUrl);
         } else if (fotoPreview.style.opacity === '0.5') {
@@ -1050,7 +1049,7 @@ document.getElementById('registrationForm').addEventListener('submit', async (e)
             showLoading('Mengupload foto...');
             try {
                 const url = await uploadToImgbb(fotoInput.files[0]);
-                fotoPreview.dataset.freeimageUrl = url;
+                fotoPreview.dataset.fotoBase64 = url;
                 if (noteEl) { noteEl.style.color = '#2d7a4f'; noteEl.textContent = '✅ Foto berhasil diupload!'; }
                 hideLoading();
                 simpan(url);
@@ -1264,7 +1263,7 @@ function showMemberContent(menuId) {
                 return;
             }
             gantiProfilStatus.style.color = 'var(--text-mid)';
-            gantiProfilStatus.textContent = '⏳ Mengupload foto ke server...';
+            gantiProfilStatus.textContent = '⏳ Memproses foto...';
 
             // Helper: create a fresh <img> element (solves broken-image-won't-reload issue)
             function setProfilImg(src) {
@@ -1292,10 +1291,10 @@ function showMemberContent(menuId) {
             reader.readAsDataURL(file);
 
             try {
-                // Step 2: Upload ke freeimage.host
+                // Step 2: Kompres foto ke base64
                 const url = await uploadToImgbb(file);
 
-                // Step 3: Tampilkan foto dari URL freeimage.host
+                // Step 3: Tampilkan foto dari base64
                 setProfilImg(url);
 
                 // Step 4: Update memory
@@ -1428,11 +1427,11 @@ function showAdminPanel(section) {
     const panel = document.getElementById('adminPanelContent');
 
     if (section === 'logo') {
-        panel.innerHTML = `<h3>🖼️ Upload Logo</h3><div class="upload-area"><input type="file" id="logoUpload" accept="image/*"><div class="imgbb-note">📤 Logo akan diupload ke freeimage.host</div><button id="uploadLogoBtn" class="btn-success" style="margin-top:10px">Upload Logo</button></div>`;
+        panel.innerHTML = `<h3>🖼️ Upload Logo</h3><div class="upload-area"><input type="file" id="logoUpload" accept="image/*"><div class="imgbb-note">📷 Logo akan dikompres & disimpan otomatis</div><button id="uploadLogoBtn" class="btn-success" style="margin-top:10px">Upload Logo</button></div>`;
         document.getElementById('uploadLogoBtn').onclick = async () => {
             const file = document.getElementById('logoUpload').files[0];
             if (!file) { alert('Pilih file!'); return; }
-            showLoading('Mengupload logo ke freeimage.host...');
+            showLoading('Menyimpan logo...');
             try {
                 const url = await uploadToImgbb(file);
                 await saveLogo(url);
@@ -2594,61 +2593,48 @@ if (SUPABASE_URL && SUPABASE_KEY) {
     loadAllData();
 }
 
-// ==================== UPLOAD HELPERS ====================
+// ==================== FOTO: KOMPRES & SIMPAN BASE64 ====================
+// Semua layanan hosting gambar pihak ketiga (imgbb, freeimage.host, postimages)
+// memblokir request langsung dari browser (CORS error / Failed to fetch).
+// Solusi terbaik: kompres foto di browser pakai <canvas>, simpan base64 ke Supabase.
+// Ukuran hasil: ~20-35KB per foto — sangat ringan untuk kolom TEXT Supabase.
 
-// --- Helper: kompres gambar via canvas ---
-async function compressFotoToBase64(file, maxWidth = 1200, quality = 0.85) {
+// Kompres gambar via canvas — hasilkan base64 JPEG kecil
+async function compressFotoToBase64(file, maxPx = 400, quality = 0.82) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
+        reader.onerror = () => reject(new Error('Gagal membaca file'));
         reader.onload = (e) => {
             const img = new Image();
+            img.onerror = () => reject(new Error('Gagal memuat gambar'));
             img.onload = () => {
                 let w = img.width, h = img.height;
-                if (w > h) { if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; } }
-                else       { if (h > maxWidth) { w = Math.round(w * maxWidth / h); h = maxWidth; } }
+                // Scale proporsional, max maxPx di sisi terpanjang
+                if (w > h) { if (w > maxPx) { h = Math.round(h * maxPx / w); w = maxPx; } }
+                else       { if (h > maxPx) { w = Math.round(w * maxPx / h); h = maxPx; } }
                 const canvas = document.createElement('canvas');
                 canvas.width = w; canvas.height = h;
                 const ctx = canvas.getContext('2d');
-                ctx.fillStyle = '#ffffff';
+                ctx.fillStyle = '#ffffff'; // background putih (handle PNG transparan)
                 ctx.fillRect(0, 0, w, h);
                 ctx.drawImage(img, 0, 0, w, h);
-                resolve(canvas.toDataURL('image/jpeg', quality));
+                const b64 = canvas.toDataURL('image/jpeg', quality);
+                console.log(`[foto] Dikompres: ${w}x${h}px, ~${Math.round(b64.length*3/4/1024)}KB`);
+                resolve(b64);
             };
-            img.onerror = reject;
             img.src = e.target.result;
         };
-        reader.onerror = reject;
         reader.readAsDataURL(file);
     });
 }
 
-// --- FOTO PENDAFTAR: upload ke freeimage.host (bebas hotlink) ---
-// Dipakai untuk: foto profil anggota, foto di kartu/download
-const FREEIMAGE_API_KEY = '6d207e02198a847aa98d0a2a901485a5';
-
+// uploadToImgbb = alias kompres base64 (nama lama dipertahankan agar kode lain tidak perlu diubah)
 async function uploadToImgbb(file) {
-    const base64 = await compressFotoToBase64(file, 1200, 0.85);
-    const base64data = base64.split(',')[1];
-    const fd = new FormData();
-    fd.append('key', FREEIMAGE_API_KEY);
-    fd.append('action', 'upload');
-    fd.append('source', base64data);
-    fd.append('format', 'json');
-    const res = await fetch('https://freeimage.host/api/1/upload', { method: 'POST', body: fd });
-    if (!res.ok) throw new Error('freeimage.host HTTP error: ' + res.status);
-    const json = await res.json();
-    if (json.status_code !== 200 || !json.image)
-        throw new Error('freeimage.host gagal: ' + JSON.stringify(json));
-    const url = json.image.url || (json.image.medium && json.image.medium.url);
-    if (!url) throw new Error('freeimage.host: URL tidak ditemukan');
-    console.log('[freeimage.host] Foto upload sukses:', url);
-    return url;
+    return await compressFotoToBase64(file, 400, 0.82);
 }
 
-// --- BUKTI TRANSFER: upload ke imgbb ---
-// Tidak perlu ditampilkan sbg <img> di website, hanya link lihat/download
+// uploadBuktiToImgbb = upload bukti transfer ke imgbb via API (hanya untuk link lihat admin)
 const IMGBB_API_KEY = 'c06cc94a680d002df87b544ef34cae93';
-
 async function uploadBuktiToImgbb(file) {
     const fd = new FormData();
     fd.append('image', file);
@@ -2656,9 +2642,8 @@ async function uploadBuktiToImgbb(file) {
     if (!res.ok) throw new Error('imgbb HTTP error: ' + res.status);
     const json = await res.json();
     if (!json.success) throw new Error('imgbb gagal: ' + JSON.stringify(json.error));
-    // Untuk bukti transfer, display_url cukup — hanya dibuka di tab baru, bukan di-embed
-    const url = json.data.display_url || json.data.url
-        || (json.data.image && json.data.image.url);
+    // Untuk bukti transfer pakai display_url — hanya dibuka di tab baru, bukan di-embed
+    const url = json.data.display_url || json.data.url || (json.data.image && json.data.image.url);
     if (!url) throw new Error('imgbb: URL tidak ditemukan');
     console.log('[imgbb] Bukti transfer upload sukses:', url);
     return url;
@@ -2681,7 +2666,7 @@ const _patchHeroLogo = () => {
 setTimeout(_patchHeroLogo, 0);
 
 // ==================== IMGBB: FOTO UPLOAD (Registration) ====================
-// Override fotoInput change to upload ke freeimage.host
+// Override fotoInput change: kompres foto ke base64
 fotoInput.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) { fotoPreview.style.display = 'none'; return; }
@@ -2691,26 +2676,26 @@ fotoInput.addEventListener('change', async (e) => {
     reader.readAsDataURL(file);
     // Show uploading status
     const noteEl = fotoInput.parentElement.querySelector('.imgbb-note') || fotoInput.nextElementSibling;
-    if (noteEl) { noteEl.style.color = 'var(--text-mid)'; noteEl.textContent = '⏳ Mengupload foto ke server...'; }
-    // Upload ke freeimage.host
+    if (noteEl) { noteEl.style.color = 'var(--text-mid)'; noteEl.textContent = '⏳ Memproses foto...'; }
+    // Kompres foto ke base64
     try {
         fotoPreview.style.opacity = '0.5';
         const url = await uploadToImgbb(file);
         fotoPreview.src = url;
         fotoPreview.style.opacity = '1';
-        fotoPreview.dataset.freeimageUrl = url;
-        if (noteEl) { noteEl.style.color = '#2d7a4f'; noteEl.textContent = '✅ Foto berhasil diupload ke server!'; }
+        fotoPreview.dataset.fotoBase64 = url;
+        if (noteEl) { noteEl.style.color = '#2d7a4f'; noteEl.textContent = '✅ Foto siap disimpan!'; }
     } catch(err) {
-        console.warn('freeimage.host upload failed:', err.message);
+        console.warn('Kompres foto gagal:', err.message);
         fotoPreview.style.opacity = '1';
-        fotoPreview.dataset.freeimageUrl = '';
-        if (noteEl) { noteEl.style.color = 'var(--crimson)'; noteEl.textContent = '⚠️ Upload foto gagal. Coba lagi atau periksa koneksi internet.'; }
+        fotoPreview.dataset.fotoBase64 = '';
+        if (noteEl) { noteEl.style.color = 'var(--crimson)'; noteEl.textContent = '⚠️ Gagal memproses foto. Coba pilih foto lain.'; }
     }
 }, true); // capture phase so it runs AFTER existing listener sets base64
 
 // Logo upload now handled directly in showAdminPanel (patched above)
 
-// Registration submit uses freeimage.host URL via fotoPreview.dataset.freeimageUrl
+// Registration submit uses freeimage.host URL via fotoPreview.dataset.fotoBase64
 
 </script>
 </body>
