@@ -1099,8 +1099,10 @@ adminLoginBtn.onclick = () => {
     const modal = document.createElement('div'); modal.className = 'modal';
     modal.innerHTML = `<div class="modal-content"><h3>🔐 Login Admin</h3><input type="password" id="adminPasswordInput" placeholder="Password Admin" style="margin:15px 0"><div style="display:flex; gap:10px;"><button id="submitAdminLogin" class="btn">Login</button><button id="cancelAdminLogin" class="btn-outline">Batal</button></div><div style="text-align:center;margin-top:14px"><a id="lupaPasswordAdminLink" href="#" style="font-size:.85rem;color:var(--crimson);font-family:'Cinzel',serif;letter-spacing:.05em;text-decoration:underline;">🔓 Lupa Password Admin?</a></div></div>`;
     document.body.appendChild(modal);
-    document.getElementById('submitAdminLogin').onclick = () => {
-        if (document.getElementById('adminPasswordInput').value === 'admin123') {
+    document.getElementById('submitAdminLogin').onclick = async () => {
+        const inputPass = document.getElementById('adminPasswordInput').value;
+        const storedPass = await sb.getSetting('admin_password') || 'admin123';
+        if (inputPass === storedPass) {
             modal.remove(); hideAllSections(); adminPanel.classList.remove('hidden'); showPublicToolbar(false);
             syncKaratekaFromRegistrations(); buildAdminMenu(); showAdminPanel('pengurus');
         } else alert('Password admin salah!');
@@ -1405,6 +1407,7 @@ function buildAdminMenu() {
         <button data-section="iuran">💸 Iuran</button>
         <button data-section="pendaftar">📋 Pendaftar</button>
         <button data-section="pelatih">🔑 Zona Pelatih</button>
+        <button data-section="gantiPassword" style="background:#420f0f;border-color:#8b1a1a;color:#f0a8a8;">🔒 Ganti Password</button>
     `;
     document.querySelectorAll('#adminMenuNav button').forEach(btn => {
         btn.addEventListener('click', () => showAdminPanel(btn.dataset.section));
@@ -1499,12 +1502,12 @@ function showAdminPanel(section) {
                     <th rowspan="2">NO</th><th rowspan="2">NAMA LENGKAP</th><th rowspan="2">KYU</th><th rowspan="2">UNIT</th>
                     <th colspan="2">TACHI DACHI</th><th colspan="2">JUPPO</th><th colspan="2">KIHON WAZA</th>
                     <th colspan="2">KIHON IDO</th><th colspan="2">SHIHO IDO</th><th colspan="2">YAKUSOKU</th>
-                    <th rowspan="2">KATA</th><th rowspan="2">BUNKAI</th><th rowspan="2">KUMITE</th><th rowspan="2">TEORI</th><th rowspan="2">REKOM</th>
+                    <th rowspan="2">KATA</th><th rowspan="2">BUNKAI</th><th rowspan="2">KUMITE</th><th rowspan="2">TEORI</th><th rowspan="2">RECOM-<br>MENDED<br>RANK</th><th rowspan="2">AWARDED<br>RANK</th>
                 </tr>
                 <tr style="background:#2c3e66; color:white;"><th>1</th><th>2</th><th>1</th><th>2</th><th>1</th><th>2</th><th>1</th><th>2</th><th>1</th><th>2</th><th>1</th><th>2</th></tr>
             </thead><tbody>`;
         registrations.forEach((reg, idx) => {
-            const nilai = penilaianData.nilai[reg.id] || { tachi1:70,tachi2:70,juppo1:70,juppo2:70,kihon1:70,kihon2:70,kihonIdo1:70,kihonIdo2:70,shihoIdo1:70,shihoIdo2:70,yakusoku1:70,yakusoku2:70,kata:70,bunkai:70,kumite:70,teori:70,rekom:'C' };
+            const nilai = penilaianData.nilai[reg.id] || { tachi1:70,tachi2:70,juppo1:70,juppo2:70,kihon1:70,kihon2:70,kihonIdo1:70,kihonIdo2:70,shihoIdo1:70,shihoIdo2:70,yakusoku1:70,yakusoku2:70,kata:70,bunkai:70,kumite:70,teori:70,rekom:'',rekomAwarded:'' };
             html += `<tr>
                 <td style="text-align:center;"><input type="checkbox" class="pilihPesertaPenilaian" data-id="${reg.id}"><br>${idx+1}</td>
                 <td><input type="text" class="namaPenilaian" data-id="${reg.id}" value="${reg.nama}" style="width:150px;"></td>
@@ -1526,7 +1529,8 @@ function showAdminPanel(section) {
                 <td><input type="number" class="nilai-bunkai" data-id="${reg.id}" value="${nilai.bunkai}" style="width:50px;"></td>
                 <td><input type="number" class="nilai-kumite" data-id="${reg.id}" value="${nilai.kumite}" style="width:50px;"></td>
                 <td><input type="number" class="nilai-teori" data-id="${reg.id}" value="${nilai.teori}" style="width:50px;"></td>
-                <td><input type="text" class="rekomPenilaian" data-id="${reg.id}" value="${nilai.rekom}" style="width:50px;"></td>
+                <td><input type="text" class="rekomPenilaian" data-id="${reg.id}" value="${nilai.rekom}" style="width:55px;" placeholder="e.g. 8"></td>
+                <td><input type="text" class="awardedPenilaian" data-id="${reg.id}" value="${nilai.rekomAwarded||''}" style="width:55px;" placeholder="e.g. 8"></td>
             </tr>`;
         });
         html += `</tbody></table></div><div style="margin-top:20px;"><button id="simpanPenilaianBtn" class="btn-success">💾 Simpan</button><button id="downloadPenilaianExcel" class="btn">📥 Download Excel</button></div>`;
@@ -1558,7 +1562,8 @@ function showAdminPanel(section) {
                             bunkai: parseInt(document.querySelector(`.nilai-bunkai[data-id="${id}"]`).value)||0,
                             kumite: parseInt(document.querySelector(`.nilai-kumite[data-id="${id}"]`).value)||0,
                             teori: parseInt(document.querySelector(`.nilai-teori[data-id="${id}"]`).value)||0,
-                            rekom: document.querySelector(`.rekomPenilaian[data-id="${id}"]`).value||'C'
+                            rekom: document.querySelector(`.rekomPenilaian[data-id="${id}"]`).value||'',
+                            rekomAwarded: document.querySelector(`.awardedPenilaian[data-id="${id}"]`).value||''
                         };
                         await savePenilaian(id, nilai);
                     } else {
@@ -1574,38 +1579,78 @@ function showAdminPanel(section) {
             const tgl = document.getElementById('tglUjianPenilaian').value;
             const tglFormatted = new Date(tgl).toLocaleDateString('id-ID', { year:'numeric', month:'long', day:'numeric' });
             const cabang = document.getElementById('cabangPenilaian').value;
-            let excelRows = [['KARATE-DO GOJUKAI INDONESIA'],['KOMISARIAT DAERAH MALUT'],[`CABANG : ${cabang}`],[`Tanggal Ujian : ${tglFormatted}`],[]];
-            excelRows.push(['NO','NAMA LENGKAP','KYU','UNIT','TACHI 1','TACHI 2','JUPPO 1','JUPPO 2','KIHON 1','KIHON 2','KIHON IDO 1','KIHON IDO 2','SHIHO IDO 1','SHIHO IDO 2','YAKUSOKU 1','YAKUSOKU 2','KATA','BUNKAI','KUMITE','TEORI','REKOM']);
+            const lokasi = document.getElementById('lokasiPenilaian').value;
+            // Match FORMAT_UJIAN template structure exactly
+            let excelRows = [
+                ['','','','KOMISARIAT DAERAH SULAWESI SELATAN','','','','','','','','','','','','','','','','SCORE'],
+                ['','','','','CABANG',':', cabang,'','','','','','','','','','','','','A - A+'],
+                ['','','','','','','','','','','','','','','','','','','','B - B+'],
+                ['','','','','','','','','','','','','','','','','','','','C - C+'],
+                ['','','','','','','','','','','','','','','','','','','','D - D+'],
+                [],
+                ['Grading Panel Head', '', '', '', '', '', '', '', '', '', '', '', 'Membership Number'],
+                ['2nd Panel Member'],
+                ['3rd Panel Member'],
+                ['4th Panel Member'],
+                ['5th Panel Member'],
+                [],
+                // Main header row 1
+                ['NO','NAMA LENGKAP','TINGKATAN KYU','DOJO/UNIT',
+                 'TACHI DACHI','','JUPPO IDO','',
+                 'KIHON WAZA','','KIHON IDO','',
+                 'SHIHO IDO','','YAKUSOKU KUMITE','',
+                 'KATA','','','','BUNKAI','KUMITE','TEORI','RECOM-MENDED RANK','AWARDED RANK'],
+                // Sub-header row 2 (scores row)
+                ['','','','',
+                 '1','2','1','2',
+                 '1','2','1','2',
+                 '1','2','1','2',
+                 '1','2','3','4','5','','','','']
+            ];
             let no = 1;
             document.querySelectorAll('.pilihPesertaPenilaian').forEach(cb => {
                 if (cb.checked) {
                     const id = parseInt(cb.dataset.id);
-                    excelRows.push([no++,
+                    excelRows.push([
+                        no++,
                         document.querySelector(`.namaPenilaian[data-id="${id}"]`).value,
                         document.querySelector(`.kyuPenilaian[data-id="${id}"]`).value,
                         document.querySelector(`.unitPenilaian[data-id="${id}"]`).value,
-                        document.querySelector(`.nilai-tachi1[data-id="${id}"]`).value,
-                        document.querySelector(`.nilai-tachi2[data-id="${id}"]`).value,
-                        document.querySelector(`.nilai-juppo1[data-id="${id}"]`).value,
-                        document.querySelector(`.nilai-juppo2[data-id="${id}"]`).value,
-                        document.querySelector(`.nilai-kihon1[data-id="${id}"]`).value,
-                        document.querySelector(`.nilai-kihon2[data-id="${id}"]`).value,
-                        document.querySelector(`.nilai-kihonIdo1[data-id="${id}"]`).value,
-                        document.querySelector(`.nilai-kihonIdo2[data-id="${id}"]`).value,
-                        document.querySelector(`.nilai-shihoIdo1[data-id="${id}"]`).value,
-                        document.querySelector(`.nilai-shihoIdo2[data-id="${id}"]`).value,
-                        document.querySelector(`.nilai-yakusoku1[data-id="${id}"]`).value,
-                        document.querySelector(`.nilai-yakusoku2[data-id="${id}"]`).value,
-                        document.querySelector(`.nilai-kata[data-id="${id}"]`).value,
-                        document.querySelector(`.nilai-bunkai[data-id="${id}"]`).value,
-                        document.querySelector(`.nilai-kumite[data-id="${id}"]`).value,
-                        document.querySelector(`.nilai-teori[data-id="${id}"]`).value,
-                        document.querySelector(`.rekomPenilaian[data-id="${id}"]`).value]);
+                        parseFloat(document.querySelector(`.nilai-tachi1[data-id="${id}"]`).value)||0,
+                        parseFloat(document.querySelector(`.nilai-tachi2[data-id="${id}"]`).value)||0,
+                        parseFloat(document.querySelector(`.nilai-juppo1[data-id="${id}"]`).value)||0,
+                        parseFloat(document.querySelector(`.nilai-juppo2[data-id="${id}"]`).value)||0,
+                        parseFloat(document.querySelector(`.nilai-kihon1[data-id="${id}"]`).value)||0,
+                        parseFloat(document.querySelector(`.nilai-kihon2[data-id="${id}"]`).value)||0,
+                        parseFloat(document.querySelector(`.nilai-kihonIdo1[data-id="${id}"]`).value)||0,
+                        parseFloat(document.querySelector(`.nilai-kihonIdo2[data-id="${id}"]`).value)||0,
+                        parseFloat(document.querySelector(`.nilai-shihoIdo1[data-id="${id}"]`).value)||0,
+                        parseFloat(document.querySelector(`.nilai-shihoIdo2[data-id="${id}"]`).value)||0,
+                        parseFloat(document.querySelector(`.nilai-yakusoku1[data-id="${id}"]`).value)||0,
+                        parseFloat(document.querySelector(`.nilai-yakusoku2[data-id="${id}"]`).value)||0,
+                        parseFloat(document.querySelector(`.nilai-kata[data-id="${id}"]`).value)||0,
+                        '',  // kata 2
+                        '',  // kata 3
+                        '',  // kata 4
+                        parseFloat(document.querySelector(`.nilai-bunkai[data-id="${id}"]`).value)||0,
+                        parseFloat(document.querySelector(`.nilai-kumite[data-id="${id}"]`).value)||0,
+                        parseFloat(document.querySelector(`.nilai-teori[data-id="${id}"]`).value)||0,
+                        document.querySelector(`.rekomPenilaian[data-id="${id}"]`).value,
+                        document.querySelector(`.awardedPenilaian[data-id="${id}"]`).value
+                    ]);
                 }
             });
             const ws = XLSX.utils.aoa_to_sheet(excelRows);
-            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Penilaian Kyu');
-            XLSX.writeFile(wb, `Penilaian_Ujian_Kyu_${tgl}.xlsx`);
+            ws['!cols'] = [
+                {wch:4},{wch:25},{wch:6},{wch:18},
+                {wch:7},{wch:7},{wch:7},{wch:7},
+                {wch:7},{wch:7},{wch:7},{wch:7},
+                {wch:7},{wch:7},{wch:7},{wch:7},
+                {wch:7},{wch:7},{wch:7},{wch:7},{wch:7},
+                {wch:8},{wch:6},{wch:12},{wch:10}
+            ];
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+            XLSX.writeFile(wb, `FORMAT_UJIAN_${tgl}.xlsx`);
         };
 
     } else if (section === 'ijazah') {
@@ -1634,20 +1679,72 @@ function showAdminPanel(section) {
         html += `</tbody></table></div><button id="downloadIjazahExcel" class="btn-success" style="margin-top:15px;">📥 Download Excel Usulan Ijazah</button>`;
         panel.innerHTML = html;
         document.getElementById('downloadIjazahExcel').onclick = () => {
-            const tglFormatted = new Date(document.getElementById('tglIjazah').value).toLocaleDateString('id-ID', { year:'numeric', month:'long', day:'numeric' });
-            let excelRows = [['PANITIA PELAKSANA GASHUKU DAN UJIAN'],['KARATE-DO GOJUKAI INDONESIA'],['KOMISARIAT DAERAH MALUKU UTARA'],['REKAPITULASI NAMA PESERTA UJIAN'],[],['NO','TGL UJIAN','NAMA LENGKAP','TEMPAT/TANGGAL LAHIR','UNIT','CABANG','KYU','LULUS KYU','SABUK','NOMOR REG.PB']];
+            const tglIjazahVal = document.getElementById('tglIjazah').value;
+            const tglFormatted = new Date(tglIjazahVal).toLocaleDateString('id-ID', { year:'numeric', month:'long', day:'numeric' });
+            const cabangVal = document.getElementById('cabangIjazah').value || 'TIDORE KEPULAUAN';
+            // Build header rows matching the official template
+            let excelRows = [
+                ['PANITIA PELAKSANA GASHUKU DAN UJIAN'],
+                ['KARATE-DO GOJUKAI INDONESIA'],
+                ['KOMISARIAT DAERAH SULAWESI-SELATAN'],
+                ['REKAPITULASI NAMA PESERTA UJIAN'],
+                [],
+                ['KARATE-DO GOJUKAI INDONESIA KOMDA SULSEL'],
+                ['NO','TGL UJIAN','NAMA LENGKAP','TEMPAT/TANGGAL LAHIR','UNIT','CABANG','KYU','LULUS KYU','SABUK','NOMOR REG.PB']
+            ];
             let no = 1;
             document.querySelectorAll('.pilihIjazah').forEach(cb => {
                 if (cb.checked) {
                     const id = parseInt(cb.dataset.id);
-                    excelRows.push([no++, tglFormatted, document.querySelector(`.namaIjazah[data-id="${id}"]`).value, document.querySelector(`.ttlIjazah[data-id="${id}"]`).value, document.querySelector(`.unitIjazah[data-id="${id}"]`).value, document.querySelector(`.cabangIjazahRow[data-id="${id}"]`).value, document.querySelector(`.kyuSekarang[data-id="${id}"]`).value, document.querySelector(`.lulusKyu[data-id="${id}"]`).value, document.querySelector(`.sabukIjazah[data-id="${id}"]`).value, document.querySelector(`.noReg[data-id="${id}"]`).value]);
+                    excelRows.push([
+                        no++,
+                        tglFormatted,
+                        document.querySelector(`.namaIjazah[data-id="${id}"]`).value,
+                        document.querySelector(`.ttlIjazah[data-id="${id}"]`).value,
+                        document.querySelector(`.unitIjazah[data-id="${id}"]`).value,
+                        document.querySelector(`.cabangIjazahRow[data-id="${id}"]`).value || cabangVal,
+                        document.querySelector(`.kyuSekarang[data-id="${id}"]`).value,
+                        document.querySelector(`.lulusKyu[data-id="${id}"]`).value,
+                        document.querySelector(`.sabukIjazah[data-id="${id}"]`).value,
+                        document.querySelector(`.noReg[data-id="${id}"]`).value
+                    ]);
                 }
             });
             const ws = XLSX.utils.aoa_to_sheet(excelRows);
+            // Apply some column widths
+            ws['!cols'] = [{wch:5},{wch:20},{wch:25},{wch:28},{wch:18},{wch:18},{wch:6},{wch:8},{wch:10},{wch:15}];
             const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'KESELURUHAN');
-            XLSX.writeFile(wb, `Usulan_Ijazah_Kyu_${document.getElementById('tglIjazah').value}.xlsx`);
+            XLSX.writeFile(wb, `format_usulan_ijazah_kyu_${tglIjazahVal}.xlsx`);
         };
 
+    } else if (section === 'gantiPassword') {
+        panel.innerHTML = `<h3>🔒 Ganti Password Admin</h3>
+            <div style="max-width:400px;margin-top:15px;">
+                <div style="margin-bottom:15px;"><label>Password Lama</label><input type="password" id="oldAdminPass" placeholder="Masukkan password lama"></div>
+                <div style="margin-bottom:15px;"><label>Password Baru</label><input type="password" id="newAdminPass" placeholder="Masukkan password baru"></div>
+                <div style="margin-bottom:20px;"><label>Konfirmasi Password Baru</label><input type="password" id="confirmAdminPass" placeholder="Ulangi password baru"></div>
+                <button id="submitGantiPass" class="btn-success">💾 Simpan Password Baru</button>
+                <div id="gantiPassMsg" style="margin-top:12px;font-size:.9rem;"></div>
+            </div>`;
+        document.getElementById('submitGantiPass').onclick = async () => {
+            const oldPass = document.getElementById('oldAdminPass').value;
+            const newPass = document.getElementById('newAdminPass').value;
+            const confirmPass = document.getElementById('confirmAdminPass').value;
+            const msg = document.getElementById('gantiPassMsg');
+            const stored = await sb.getSetting('admin_password') || 'admin123';
+            if (oldPass !== stored) { msg.innerHTML = '<span style="color:#c0392b;">❌ Password lama salah!</span>'; return; }
+            if (newPass.length < 6) { msg.innerHTML = '<span style="color:#c0392b;">❌ Password baru minimal 6 karakter.</span>'; return; }
+            if (newPass !== confirmPass) { msg.innerHTML = '<span style="color:#c0392b;">❌ Konfirmasi password tidak cocok!</span>'; return; }
+            showLoading('Menyimpan password...');
+            try {
+                await sb.setSetting('admin_password', newPass);
+                msg.innerHTML = '<span style="color:#2d7a4f;">✅ Password berhasil diubah!</span>';
+                document.getElementById('oldAdminPass').value = '';
+                document.getElementById('newAdminPass').value = '';
+                document.getElementById('confirmAdminPass').value = '';
+            } catch(e) { msg.innerHTML = '<span style="color:#c0392b;">❌ Gagal: ' + e.message + '</span>'; }
+            finally { hideLoading(); }
+        };
     } else if (section === 'laporan') {
         showAdminLaporanPanel(panel);
     } else if (section === 'keuangan') {
