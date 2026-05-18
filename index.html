@@ -1502,7 +1502,7 @@ function showAdminPanel(section) {
                     <th rowspan="2">NO</th><th rowspan="2">NAMA LENGKAP</th><th rowspan="2">KYU</th><th rowspan="2">UNIT</th>
                     <th colspan="2">TACHI DACHI</th><th colspan="2">JUPPO</th><th colspan="2">KIHON WAZA</th>
                     <th colspan="2">KIHON IDO</th><th colspan="2">SHIHO IDO</th><th colspan="2">YAKUSOKU</th>
-                    <th rowspan="2">KATA</th><th rowspan="2">BUNKAI</th><th rowspan="2">KUMITE</th><th rowspan="2">TEORI</th><th rowspan="2">RECOM-<br>MENDED<br>RANK</th><th rowspan="2">AWARDED<br>RANK</th>
+                    <th rowspan="2">KATA</th><th rowspan="2">BUNKAI</th><th rowspan="2">KUMITE</th><th rowspan="2">TEORI</th><th rowspan="2">RECOM-<br>MENDED<br>RANK</th><th rowspan="2">AWARDED<br>RANK</th><th rowspan="2">HAPUS</th>
                 </tr>
                 <tr style="background:#2c3e66; color:white;"><th>1</th><th>2</th><th>1</th><th>2</th><th>1</th><th>2</th><th>1</th><th>2</th><th>1</th><th>2</th><th>1</th><th>2</th></tr>
             </thead><tbody>`;
@@ -1531,10 +1531,26 @@ function showAdminPanel(section) {
                 <td><input type="number" class="nilai-teori" data-id="${reg.id}" value="${nilai.teori}" style="width:50px;"></td>
                 <td><input type="text" class="rekomPenilaian" data-id="${reg.id}" value="${nilai.rekom}" style="width:55px;" placeholder="e.g. 8"></td>
                 <td><input type="text" class="awardedPenilaian" data-id="${reg.id}" value="${nilai.rekomAwarded||''}" style="width:55px;" placeholder="e.g. 8"></td>
+                <td style="text-align:center;"><button class="hapusPesertaUjian" data-id="${reg.id}" style="background:#b91c1c;color:#fff;border:none;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:11px;">🗑️</button></td>
             </tr>`;
         });
         html += `</tbody></table></div><div style="margin-top:20px;"><button id="simpanPenilaianBtn" class="btn-success">💾 Simpan</button><button id="downloadPenilaianExcel" class="btn">📥 Download Excel</button></div>`;
         panel.innerHTML = html;
+
+        // Hapus peserta dari tabel ujian (hanya dari tampilan, tidak hapus dari registrasi)
+        panel.addEventListener('click', (e) => {
+            if (e.target.classList.contains('hapusPesertaUjian')) {
+                const row = e.target.closest('tr');
+                if (row && confirm('Hapus peserta ini dari daftar ujian?')) {
+                    row.remove();
+                    // Re-number remaining rows
+                    document.querySelectorAll('#tabelPenilaianKyu tbody tr').forEach((tr, i) => {
+                        const noCell = tr.querySelector('td:first-child');
+                        if (noCell) noCell.lastChild.textContent = i + 1;
+                    });
+                }
+            }
+        });
 
         document.getElementById('simpanPenilaianBtn').onclick = async () => {
             penilaianData.tanggal = document.getElementById('tglUjianPenilaian').value;
@@ -1654,30 +1670,65 @@ function showAdminPanel(section) {
         };
 
     } else if (section === 'ijazah') {
+        // Build ijazah list from penilaianData.nilai — only peserta who have scores saved (i.e. were in ujian)
+        // Determine awarded rank from awardedRank field or fallback to lulus logic
+        const sabukFromKyu = (kyu) => {
+            kyu = parseInt(kyu);
+            if (kyu >= 9) return 'KUNING';
+            if (kyu >= 7) return 'ORANGE';
+            if (kyu >= 5) return 'HIJAU';
+            if (kyu >= 3) return 'BIRU';
+            return 'COKLAT';
+        };
+        // Use only registrations that have penilaian data (were in the ujian table)
+        const pesertaUjian = registrations.filter(r => penilaianData.nilai[r.id]);
+        const infoBox = pesertaUjian.length === 0
+            ? '<div style="background:rgba(201,168,76,.1);border:1px solid var(--gold-dim);border-radius:4px;padding:10px 14px;margin-bottom:14px;font-size:.9rem;">⚠️ Belum ada data penilaian ujian. Silakan isi dan simpan data di menu <strong>📝 Penilaian Kyu</strong> terlebih dahulu.</div>'
+            : `<div style="background:rgba(45,122,79,.08);border:1px solid #2d7a4f;border-radius:4px;padding:8px 14px;margin-bottom:14px;font-size:.88rem;">✅ Menampilkan <strong>${pesertaUjian.length} peserta</strong> yang tercatat dalam Laporan Ujian.</div>`;
         let html = `<h3>🎓 Usulan Ijazah Kenaikan Kyu</h3>
+            ${infoBox}
             <div class="grid-2"><div><label>Tanggal Ujian</label><input type="date" id="tglIjazah" value="${penilaianData.tanggal}"></div>
             <div><label>CABANG</label><input type="text" id="cabangIjazah" value="TIDORE KEPULAUAN"></div></div>
-            <div class="table-wrapper"><table id="tabelIjazah"><thead><th>Pilih</th><th>NO</th><th>NAMA LENGKAP</th><th>TEMPAT/TANGGAL LAHIR</th><th>UNIT</th><th>CABANG</th><th>KYU</th><th>LULUS KYU</th><th>SABUK</th><th>NOMOR REG.PB</th></thead><tbody>`;
-        registrations.forEach((reg, idx) => {
+            <div class="table-wrapper"><table id="tabelIjazah"><thead><tr style="background:#2c3e66;color:white;"><th>Pilih</th><th>NO</th><th>NAMA LENGKAP</th><th>TEMPAT/TANGGAL LAHIR</th><th>UNIT</th><th>CABANG</th><th>KYU<br>Lama</th><th>LULUS<br>KYU</th><th>SABUK</th><th>NOMOR REG.PB</th></tr></thead><tbody>`;
+        pesertaUjian.forEach((reg, idx) => {
             const nilai = penilaianData.nilai[reg.id];
-            const lulus = nilai && (parseInt(nilai.kata)+parseInt(nilai.kumite)+parseInt(nilai.teori))/3 >= 70;
-            const kyuLama = reg.sabukAwal==='Putih'?10:reg.sabukAwal==='Kuning'?9:reg.sabukAwal==='Orange'?8:reg.sabukAwal==='Hijau'?7:reg.sabukAwal==='Biru'?5:3;
-            const kyuLulus = lulus ? Math.max(1, kyuLama-1) : kyuLama;
-            const sabuk = kyuLulus>=9?'KUNING':kyuLulus>=7?'ORANGE':kyuLulus>=5?'HIJAU':kyuLulus>=3?'BIRU':'COKLAT';
-            html += `<tr><td><input type="checkbox" class="pilihIjazah" data-id="${reg.id}" ${lulus?'checked':''}>${!lulus?'<br><small>(nilai kurang)</small>':''}</td>
+            // Determine awarded kyu from awardedRank field first, else derive from lulus logic
+            const kyuLama = parseInt(reg.sabukAwal==='Putih'?10:reg.sabukAwal==='Kuning'?9:reg.sabukAwal==='Orange'?8:reg.sabukAwal==='Hijau'?7:reg.sabukAwal==='Biru'?5:3);
+            let kyuLulus;
+            if (nilai.rekomAwarded && nilai.rekomAwarded !== '') {
+                kyuLulus = parseInt(nilai.rekomAwarded);
+            } else {
+                const avgScore = (parseFloat(nilai.kata||0)+parseFloat(nilai.kumite||0)+parseFloat(nilai.teori||0))/3;
+                const lulus = avgScore >= 70;
+                kyuLulus = lulus ? Math.max(1, kyuLama - 1) : kyuLama;
+            }
+            const sabuk = sabukFromKyu(kyuLulus);
+            const lulus = kyuLulus < kyuLama;
+            html += `<tr>
+                <td style="text-align:center;"><input type="checkbox" class="pilihIjazah" data-id="${reg.id}" ${lulus?'checked':''}></td>
                 <td style="text-align:center;">${idx+1}</td>
-                <td><input type="text" class="namaIjazah" data-id="${reg.id}" value="${reg.nama}"></td>
-                <td><input type="text" class="ttlIjazah" data-id="${reg.id}" value="${reg.ttl||'-'}"></td>
-                <td><input type="text" class="unitIjazah" data-id="${reg.id}" value="${reg.unit}"></td>
-                <td><input type="text" class="cabangIjazahRow" data-id="${reg.id}" value="TIDORE KEPULAUAN"></td>
-                <td><input type="number" class="kyuSekarang" data-id="${reg.id}" value="${kyuLama}" ${!lulus?'disabled':''}></td>
-                <td><input type="number" class="lulusKyu" data-id="${reg.id}" value="${kyuLulus}" ${!lulus?'disabled':''}></td>
-                <td><input type="text" class="sabukIjazah" data-id="${reg.id}" value="${sabuk}" ${!lulus?'disabled':''}></td>
-                <td><input type="text" class="noReg" data-id="${reg.id}" placeholder="Nomor Reg"></td>
+                <td><input type="text" class="namaIjazah" data-id="${reg.id}" value="${reg.nama}" style="width:160px;"></td>
+                <td><input type="text" class="ttlIjazah" data-id="${reg.id}" value="${reg.ttl||'-'}" style="width:160px;"></td>
+                <td><input type="text" class="unitIjazah" data-id="${reg.id}" value="${reg.unit}" style="width:100px;"></td>
+                <td><input type="text" class="cabangIjazahRow" data-id="${reg.id}" value="TIDORE KEPULAUAN" style="width:100px;"></td>
+                <td style="text-align:center;"><input type="number" class="kyuSekarang" data-id="${reg.id}" value="${kyuLama}" style="width:50px;"></td>
+                <td style="text-align:center;"><input type="number" class="lulusKyu" data-id="${reg.id}" value="${kyuLulus}" style="width:50px;"></td>
+                <td><input type="text" class="sabukIjazah" data-id="${reg.id}" value="${sabuk}" style="width:80px;"></td>
+                <td><input type="text" class="noReg" data-id="${reg.id}" placeholder="Nomor Reg" style="width:100px;"></td>
             </tr>`;
         });
-        html += `</tbody></table></div><button id="downloadIjazahExcel" class="btn-success" style="margin-top:15px;">📥 Download Excel Usulan Ijazah</button>`;
+        html += `</tbody></table></div>
+        <div style="margin-top:15px;display:flex;gap:10px;flex-wrap:wrap;">
+            <button id="pilihSemuaIjazah" class="btn-outline">☑️ Pilih Semua</button>
+            <button id="downloadIjazahExcel" class="btn-success">📥 Download Excel Usulan Ijazah</button>
+        </div>`;
         panel.innerHTML = html;
+        document.getElementById('pilihSemuaIjazah').onclick = () => {
+            const cbs = document.querySelectorAll('.pilihIjazah');
+            const allChecked = [...cbs].every(c => c.checked);
+            cbs.forEach(c => c.checked = !allChecked);
+            document.getElementById('pilihSemuaIjazah').textContent = allChecked ? '☑️ Pilih Semua' : '☐ Hapus Pilihan';
+        };
         document.getElementById('downloadIjazahExcel').onclick = () => {
             const tglIjazahVal = document.getElementById('tglIjazah').value;
             const tglFormatted = new Date(tglIjazahVal).toLocaleDateString('id-ID', { year:'numeric', month:'long', day:'numeric' });
@@ -1696,6 +1747,8 @@ function showAdminPanel(section) {
             document.querySelectorAll('.pilihIjazah').forEach(cb => {
                 if (cb.checked) {
                     const id = parseInt(cb.dataset.id);
+                    const kyuVal = document.querySelector(`.kyuSekarang[data-id="${id}"]`).value;
+                    const lulusKyuVal = document.querySelector(`.lulusKyu[data-id="${id}"]`).value;
                     excelRows.push([
                         no++,
                         tglFormatted,
@@ -1703,15 +1756,14 @@ function showAdminPanel(section) {
                         document.querySelector(`.ttlIjazah[data-id="${id}"]`).value,
                         document.querySelector(`.unitIjazah[data-id="${id}"]`).value,
                         document.querySelector(`.cabangIjazahRow[data-id="${id}"]`).value || cabangVal,
-                        document.querySelector(`.kyuSekarang[data-id="${id}"]`).value,
-                        document.querySelector(`.lulusKyu[data-id="${id}"]`).value,
+                        parseFloat(kyuVal)||'',
+                        parseFloat(lulusKyuVal)||'',
                         document.querySelector(`.sabukIjazah[data-id="${id}"]`).value,
                         document.querySelector(`.noReg[data-id="${id}"]`).value
                     ]);
                 }
             });
             const ws = XLSX.utils.aoa_to_sheet(excelRows);
-            // Apply some column widths
             ws['!cols'] = [{wch:5},{wch:20},{wch:25},{wch:28},{wch:18},{wch:18},{wch:6},{wch:8},{wch:10},{wch:15}];
             const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'KESELURUHAN');
             XLSX.writeFile(wb, `format_usulan_ijazah_kyu_${tglIjazahVal}.xlsx`);
