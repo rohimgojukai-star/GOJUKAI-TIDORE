@@ -223,6 +223,7 @@ body:not(.dark) .hero-fist-img{filter:drop-shadow(0 0 8px rgba(0,0,0,.25))}
 #topUtilBar{display:flex;justify-content:space-between;align-items:center;
   padding:8px 18px;background:rgba(13,27,46,.04);border-bottom:1px solid var(--gold-dim)}
 body.dark #topUtilBar{background:rgba(0,0,0,.18)}
+#topUtilBar.member-mode { display: none !important; }
 #darkModeToggle{padding:5px 13px;font-size:.65rem;letter-spacing:.07em;
   background:transparent;border-color:rgba(13,27,46,.3);color:var(--text-mid);border-radius:20px}
 body.dark #darkModeToggle{border-color:rgba(201,168,76,.35);color:var(--text-lt)}
@@ -996,6 +997,7 @@ submitPelatihLogin.onclick = () => {
         hideAllSections();
         pelatihContentArea.classList.remove('hidden');
         showPublicToolbar(false);
+        document.getElementById('topUtilBar').classList.add('member-mode');
         showPelatihContent('silabus');
     } else alert('Kode pelatih salah!');
 };
@@ -1004,6 +1006,7 @@ logoutPelatihBtn.onclick = () => {
     isPelatihMode = false;
     hideAllSections();
     landingDiv.classList.remove('hidden');
+    document.getElementById('topUtilBar').classList.remove('member-mode');
     showPublicToolbar(true);
     document.getElementById('kodePelatihInput').value = '';
 };
@@ -1121,12 +1124,14 @@ document.getElementById('doLogin').addEventListener('click', () => {
     if (member) {
         currentUser = { role: 'member', nama: member.nama, unit: member.unit, id: member.id, username: member.username, sabuk: member.sabukAwal };
         hideAllSections(); memberContainer.classList.remove('hidden'); showPublicToolbar(false);
+        document.getElementById('topUtilBar').classList.add('member-mode');
         buildMemberMenu(); showMemberContent('profil');
     } else alert('Username/password salah!');
 });
 
 document.getElementById('logoutBtnMember').addEventListener('click', () => {
     currentUser = null; memberContainer.classList.add('hidden'); hideAllSections(); landingDiv.classList.remove('hidden'); showPublicToolbar(true);
+    document.getElementById('topUtilBar').classList.remove('member-mode');
 });
 
 // ==================== LOGIN ADMIN ====================
@@ -1356,20 +1361,11 @@ function showMemberContent(menuId) {
         return;
     }
     if (menuId === 'pengurus') {
-        let html = '<h3>📌 Pengurus Cabang Tidore</h3>';
-        if (uploadedFiles.pengurus.length) uploadedFiles.pengurus.forEach(f => html += `<p><a href="${f.url}" target="_blank">📄 ${f.name}</a></p>`);
-        else html += '<p>Belum ada file.</p>';
-        contentDiv.innerHTML = html;
+        renderFileSection(contentDiv, '📌 Pengurus Cabang Tidore', uploadedFiles.pengurus);
     } else if (menuId === 'adart') {
-        let html = '<h3>📜 AD/ART Gojukai</h3>';
-        if (uploadedFiles.adart.length) uploadedFiles.adart.forEach(f => html += `<p><a href="${f.url}" target="_blank">📄 ${f.name}</a></p>`);
-        else html += '<p>Belum ada file.</p>';
-        contentDiv.innerHTML = html;
+        renderFileSection(contentDiv, '📜 AD/ART Gojukai', uploadedFiles.adart);
     } else if (menuId === 'kurikulum') {
-        let html = '<h3>📚 Kurikulum Latihan</h3>';
-        if (uploadedFiles.kurikulum.length) uploadedFiles.kurikulum.forEach(f => html += `<p><a href="${f.url}" target="_blank">📄 ${f.name}</a></p>`);
-        else html += '<p>Belum ada file.</p>';
-        contentDiv.innerHTML = html;
+        renderFileSection(contentDiv, '📚 Kurikulum Latihan', uploadedFiles.kurikulum);
     } else if (menuId === 'agenda') {
         let html = `<h3>📅 Pengumuman & Informasi</h3>`;
         eventData.pengumuman.forEach(p => { html += `<div class="pengumuman-item">📢 ${p}</div>`; });
@@ -2827,6 +2823,130 @@ function showAdminIuranPanel(panel) {
 }
 
 // ==================== FILE MANAGEMENT ====================
+// ── FILE VIEWER untuk anggota ──────────────────────────────────────────────
+function renderFileSection(container, title, files) {
+    if (!files || !files.length) {
+        container.innerHTML = `<h3>${title}</h3><p style="opacity:.6">Belum ada file yang diunggah.</p>`;
+        return;
+    }
+
+    // Jika lebih dari satu file, tampilkan tab selector
+    let html = `<h3>${title}</h3>`;
+    if (files.length > 1) {
+        html += `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;" id="fileTabBar">`;
+        files.forEach((f, i) => {
+            html += `<button class="fileTabBtn" data-idx="${i}"
+                style="padding:5px 14px;border-radius:20px;border:1px solid var(--gold-dim);
+                cursor:pointer;font-size:.8rem;${i===0?'background:#2c3e66;color:#fff;':'background:transparent;color:var(--text);'}">
+                📄 ${f.name}</button>`;
+        });
+        html += `</div>`;
+    }
+    html += `<div id="fileViewerArea"></div>`;
+    container.innerHTML = html;
+
+    const renderViewer = (f) => {
+        const area = document.getElementById('fileViewerArea');
+        const ext = f.name.split('.').pop().toLowerCase();
+        const isBase64 = f.url && f.url.startsWith('data:');
+
+        if (ext === 'pdf') {
+            // PDF: embed langsung dengan iframe
+            area.innerHTML = `
+                <div style="border:1px solid var(--gold-dim);border-radius:8px;overflow:hidden;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;
+                        padding:8px 14px;background:rgba(44,62,102,.4);font-size:.85rem;">
+                        <span>📄 ${f.name}</span>
+                        <a href="${f.url}" download="${f.name}"
+                            style="color:var(--gold-lt);font-size:.8rem;text-decoration:none;
+                            border:1px solid var(--gold-dim);padding:3px 10px;border-radius:4px;">
+                            ⬇️ Download</a>
+                    </div>
+                    <iframe src="${f.url}" width="100%"
+                        style="height:75vh;min-height:400px;border:none;display:block;"
+                        title="${f.name}"></iframe>
+                </div>`;
+        } else if (['doc','docx'].includes(ext)) {
+            // DOCX: gunakan mammoth.js untuk render HTML
+            area.innerHTML = `<div style="text-align:center;padding:20px;opacity:.6;">⏳ Memuat dokumen...</div>`;
+            if (isBase64) {
+                // Convert base64 ke ArrayBuffer lalu render dengan mammoth
+                fetch(f.url)
+                    .then(r => r.arrayBuffer())
+                    .then(buf => {
+                        if (typeof mammoth !== 'undefined') {
+                            mammoth.convertToHtml({ arrayBuffer: buf })
+                                .then(result => {
+                                    area.innerHTML = `
+                                        <div style="border:1px solid var(--gold-dim);border-radius:8px;overflow:hidden;">
+                                            <div style="display:flex;justify-content:space-between;align-items:center;
+                                                padding:8px 14px;background:rgba(44,62,102,.4);font-size:.85rem;">
+                                                <span>📝 ${f.name}</span>
+                                                <a href="${f.url}" download="${f.name}"
+                                                    style="color:var(--gold-lt);font-size:.8rem;text-decoration:none;
+                                                    border:1px solid var(--gold-dim);padding:3px 10px;border-radius:4px;">
+                                                    ⬇️ Download</a>
+                                            </div>
+                                            <div style="padding:20px 24px;background:#fff;color:#111;
+                                                max-height:72vh;overflow-y:auto;font-family:Georgia,serif;
+                                                line-height:1.7;font-size:.95rem;">
+                                                ${result.value}
+                                            </div>
+                                        </div>`;
+                                })
+                                .catch(() => renderFallback(area, f));
+                        } else renderFallback(area, f);
+                    })
+                    .catch(() => renderFallback(area, f));
+            } else renderFallback(area, f);
+        } else if (['jpg','jpeg','png','gif','webp'].includes(ext)) {
+            area.innerHTML = `
+                <div style="text-align:center;">
+                    <img src="${f.url}" alt="${f.name}"
+                        style="max-width:100%;max-height:75vh;border-radius:8px;
+                        border:1px solid var(--gold-dim);">
+                    <br><a href="${f.url}" download="${f.name}"
+                        style="display:inline-block;margin-top:10px;color:var(--gold-lt);
+                        font-size:.85rem;border:1px solid var(--gold-dim);padding:5px 14px;
+                        border-radius:4px;text-decoration:none;">⬇️ Download ${f.name}</a>
+                </div>`;
+        } else {
+            renderFallback(area, f);
+        }
+    };
+
+    const renderFallback = (area, f) => {
+        area.innerHTML = `
+            <div style="border:1px solid var(--gold-dim);border-radius:8px;padding:24px;
+                text-align:center;">
+                <div style="font-size:3rem;margin-bottom:12px;">📄</div>
+                <p style="font-size:1rem;margin-bottom:16px;">${f.name}</p>
+                <p style="font-size:.85rem;opacity:.6;margin-bottom:16px;">
+                    Format ini tidak dapat ditampilkan langsung di browser.</p>
+                <a href="${f.url}" download="${f.name}"
+                    style="display:inline-block;padding:10px 24px;background:#2c3e66;
+                    color:#fff;border-radius:6px;text-decoration:none;font-size:.9rem;">
+                    ⬇️ Download File</a>
+            </div>`;
+    };
+
+    // Render file pertama
+    renderViewer(files[0]);
+
+    // Tab switching
+    if (files.length > 1) {
+        container.querySelectorAll('.fileTabBtn').forEach(btn => {
+            btn.onclick = () => {
+                container.querySelectorAll('.fileTabBtn').forEach(b => {
+                    b.style.background = 'transparent'; b.style.color = 'var(--text)';
+                });
+                btn.style.background = '#2c3e66'; btn.style.color = '#fff';
+                renderViewer(files[+btn.dataset.idx]);
+            };
+        });
+    }
+}
+
 function refreshFileList(category, elementId) {
     const container = document.getElementById(elementId);
     if (!container) return;
