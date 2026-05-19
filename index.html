@@ -488,6 +488,8 @@ let kasCabangData = { pengeluaran: [] };
 let eventData = { pengumuman: [] };
 let penilaianData = { tanggal: new Date().toISOString().slice(0,10), lokasi: 'Dojo Tidore', cabang: 'TIDORE', nilai: {} };
 let laporanLatihan = { komda: 'MALUT', cabang: 'TIDORE KEPULAUAN', unit: 'RQL TIDORE', pelatih: ['Senpai Rohim Puryanto'], tanggal: new Date().toISOString().slice(0,10), pukul: '16.00 - 18.00 WIT' };
+let riwayatUjian = [];    // [{id,tanggal,cabang,lokasi,peserta:[],disimpan}]
+let riwayatLaporan = [];  // [{id,tanggal,komda,cabang,unit,pelatih,pukul,jumlahHadir,disimpan}]
 let absensiData = {};
 let unitData = {};
 let videoLatihan = [];
@@ -628,6 +630,9 @@ async function loadAllData() {
         eventData.pengumuman = pengumuman.map(p => p.teks);
 
         // Penilaian
+        try { const ru = await sb.getSetting('riwayat_ujian');   if (ru) riwayatUjian   = JSON.parse(ru); } catch(_){}
+        try { const rl = await sb.getSetting('riwayat_laporan'); if (rl) riwayatLaporan = JSON.parse(rl); } catch(_){}
+
         const penilaian = await sb.select('gojukai_penilaian', 'select=*');
         penilaianData.nilai = {};
         penilaian.forEach(p => {
@@ -810,6 +815,36 @@ async function deletePenilaian(memberId) {
 
 async function saveLaporan() {
     await sb.setSetting('laporan_latihan', laporanLatihan);
+}
+
+async function simpanRiwayatUjian() {
+    const peserta = registrations
+        .filter(r => penilaianData.nilai[r.id])
+        .map(r => {
+            const kyuNum = r.sabukAwal==='Putih'?10:r.sabukAwal==='Kuning'?9:r.sabukAwal==='Orange'?8:r.sabukAwal==='Hijau'?7:r.sabukAwal==='Biru'?5:3;
+            return { nama:r.nama, ttl:r.ttl||'-', unit:r.unit, kyu:kyuNum, nilai:penilaianData.nilai[r.id] };
+        });
+    const entry = { id:Date.now(), tanggal:penilaianData.tanggal, cabang:penilaianData.cabang, lokasi:penilaianData.lokasi, peserta, disimpan:new Date().toLocaleString('id-ID') };
+    riwayatUjian.unshift(entry);
+    if (riwayatUjian.length > 50) riwayatUjian.length = 50;
+    await sb.setSetting('riwayat_ujian', JSON.stringify(riwayatUjian));
+}
+
+async function simpanRiwayatLaporan(jumlahHadir) {
+    const entry = { id:Date.now(), tanggal:laporanLatihan.tanggal, komda:laporanLatihan.komda, cabang:laporanLatihan.cabang, unit:laporanLatihan.unit, pelatih:laporanLatihan.pelatih, pukul:laporanLatihan.pukul, jumlahHadir, disimpan:new Date().toLocaleString('id-ID') };
+    riwayatLaporan.unshift(entry);
+    if (riwayatLaporan.length > 100) riwayatLaporan.length = 100;
+    await sb.setSetting('riwayat_laporan', JSON.stringify(riwayatLaporan));
+}
+
+async function hapusEntryRiwayatUjian(id) {
+    riwayatUjian = riwayatUjian.filter(r => r.id !== id);
+    await sb.setSetting('riwayat_ujian', JSON.stringify(riwayatUjian));
+}
+
+async function hapusEntryRiwayatLaporan(id) {
+    riwayatLaporan = riwayatLaporan.filter(r => r.id !== id);
+    await sb.setSetting('riwayat_laporan', JSON.stringify(riwayatLaporan));
 }
 
 async function saveKasCabangPengeluaran(item) {
@@ -1408,6 +1443,8 @@ function buildAdminMenu() {
         <button data-section="pendaftar">📋 Pendaftar</button>
         <button data-section="pelatih">🔑 Zona Pelatih</button>
         <button data-section="gantiPassword" style="background:#420f0f;border-color:#8b1a1a;color:#f0a8a8;">🔒 Ganti Password</button>
+        <button data-section="riwayatUjian"   style="background:#0c3460;border-color:#1a5fa8;color:#a8d4f8;">📜 Riwayat Ujian</button>
+        <button data-section="riwayatLaporan" style="background:#0c3460;border-color:#1a5fa8;color:#a8d4f8;">📋 Riwayat Latihan</button>
     `;
     document.querySelectorAll('#adminMenuNav button').forEach(btn => {
         btn.addEventListener('click', () => showAdminPanel(btn.dataset.section));
@@ -1502,14 +1539,14 @@ function showAdminPanel(section) {
                     <th rowspan="2">NO</th><th rowspan="2">NAMA LENGKAP</th><th rowspan="2">KYU</th><th rowspan="2">UNIT</th>
                     <th colspan="2">TACHI DACHI</th><th colspan="2">JUPPO</th><th colspan="2">KIHON WAZA</th>
                     <th colspan="2">KIHON IDO</th><th colspan="2">SHIHO IDO</th><th colspan="2">YAKUSOKU</th>
-                    <th rowspan="2">KATA</th><th rowspan="2">BUNKAI</th><th rowspan="2">KUMITE</th><th rowspan="2">TEORI</th><th rowspan="2">RECOM-<br>MENDED<br>RANK</th><th rowspan="2">AWARDED<br>RANK</th><th rowspan="2">HAPUS</th>
+                    <th rowspan="2">KATA</th><th rowspan="2">BUNKAI</th><th rowspan="2">KUMITE</th><th rowspan="2">TEORI</th><th rowspan="2">RECOM-<br>MENDED<br>RANK</th><th rowspan="2">AWARDED<br>RANK</th><th rowspan="2">AKTIF</th>
                 </tr>
                 <tr style="background:#2c3e66; color:white;"><th>1</th><th>2</th><th>1</th><th>2</th><th>1</th><th>2</th><th>1</th><th>2</th><th>1</th><th>2</th><th>1</th><th>2</th></tr>
             </thead><tbody>`;
         registrations.forEach((reg, idx) => {
             const nilai = penilaianData.nilai[reg.id] || { tachi1:70,tachi2:70,juppo1:70,juppo2:70,kihon1:70,kihon2:70,kihonIdo1:70,kihonIdo2:70,shihoIdo1:70,shihoIdo2:70,yakusoku1:70,yakusoku2:70,kata:70,bunkai:70,kumite:70,teori:70,rekom:'',rekomAwarded:'' };
             html += `<tr>
-                <td style="text-align:center;"><input type="checkbox" class="pilihPesertaPenilaian" data-id="${reg.id}"><br>${idx+1}</td>
+                <td style="text-align:center;"><input type="checkbox" class="pilihPesertaPenilaian" data-id="${reg.id}"><br><span class="nomorUrut">${idx+1}</span></td>
                 <td><input type="text" class="namaPenilaian" data-id="${reg.id}" value="${reg.nama}" style="width:150px;"></td>
                 <td style="text-align:center;"><input type="text" class="kyuPenilaian" data-id="${reg.id}" value="${reg.sabukAwal==='Putih'?10:reg.sabukAwal==='Kuning'?9:reg.sabukAwal==='Orange'?8:reg.sabukAwal==='Hijau'?7:reg.sabukAwal==='Biru'?5:3}" style="width:50px;"></td>
                 <td><input type="text" class="unitPenilaian" data-id="${reg.id}" value="${reg.unit}" style="width:100px;"></td>
@@ -1531,24 +1568,73 @@ function showAdminPanel(section) {
                 <td><input type="number" class="nilai-teori" data-id="${reg.id}" value="${nilai.teori}" style="width:50px;"></td>
                 <td><input type="text" class="rekomPenilaian" data-id="${reg.id}" value="${nilai.rekom}" style="width:55px;" placeholder="e.g. 8"></td>
                 <td><input type="text" class="awardedPenilaian" data-id="${reg.id}" value="${nilai.rekomAwarded||''}" style="width:55px;" placeholder="e.g. 8"></td>
-                <td style="text-align:center;"><button class="hapusPesertaUjian" data-id="${reg.id}" style="background:#b91c1c;color:#fff;border:none;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:11px;">🗑️</button></td>
+                <td style="text-align:center;"><button class="toggleExcludePeserta" data-id="${reg.id}" data-excluded="0" title="Klik untuk nonaktifkan peserta ini" style="background:#2d7a4f;color:#fff;border:none;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:11px;min-width:60px;">✅ Aktif</button></td>
             </tr>`;
         });
-        html += `</tbody></table></div><div style="margin-top:20px;"><button id="simpanPenilaianBtn" class="btn-success">💾 Simpan</button><button id="downloadPenilaianExcel" class="btn">📥 Download Excel</button></div>`;
+        html += `</tbody></table></div><div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;">
+            <button id="simpanPenilaianBtn" class="btn-success">💾 Simpan</button>
+            <button id="aktifkanSemuaBtn" class="btn-outline" title="Aktifkan kembali semua peserta yang dinonaktifkan">🔄 Aktifkan Semua</button>
+            <button id="downloadPenilaianExcel" class="btn">📥 Download Excel</button>
+        </div>`;
         panel.innerHTML = html;
 
-        // Hapus peserta dari tabel ujian (hanya dari tampilan, tidak hapus dari registrasi)
-        panel.addEventListener('click', (e) => {
-            if (e.target.classList.contains('hapusPesertaUjian')) {
-                const row = e.target.closest('tr');
-                if (row && confirm('Hapus peserta ini dari daftar ujian?')) {
-                    row.remove();
-                    // Re-number remaining rows
-                    document.querySelectorAll('#tabelPenilaianKyu tbody tr').forEach((tr, i) => {
-                        const noCell = tr.querySelector('td:first-child');
-                        if (noCell) noCell.lastChild.textContent = i + 1;
-                    });
+        document.getElementById('aktifkanSemuaBtn').onclick = () => {
+            document.querySelectorAll('.toggleExcludePeserta').forEach(btn => {
+                if (btn.dataset.excluded === '1') {
+                    btn.dataset.excluded = '0';
+                    btn.textContent = '✅ Aktif';
+                    btn.style.background = '#2d7a4f';
+                    btn.title = 'Klik untuk nonaktifkan peserta ini';
+                    const row = btn.closest('tr');
+                    row.style.opacity = '1';
+                    row.style.background = '';
+                    row.querySelectorAll('input').forEach(inp => inp.disabled = false);
                 }
+            });
+        };
+
+        // Renumber only active rows
+        const renumberPeserta = () => {
+            let no = 1;
+            document.querySelectorAll('#tabelPenilaianKyu tbody tr').forEach(tr => {
+                const btn = tr.querySelector('.toggleExcludePeserta');
+                const noCell = tr.querySelector('.nomorUrut');
+                if (!noCell) return;
+                if (btn && btn.dataset.excluded === '1') {
+                    noCell.textContent = '-';
+                } else {
+                    noCell.textContent = no++;
+                }
+            });
+            renumberPeserta();
+        };
+
+        // Toggle exclude/include peserta dari ujian
+        panel.addEventListener('click', (e) => {
+            const btn = e.target.closest('.toggleExcludePeserta');
+            if (btn) {
+                const row = btn.closest('tr');
+                const excluded = btn.dataset.excluded === '1';
+                if (excluded) {
+                    // Re-include
+                    btn.dataset.excluded = '0';
+                    btn.textContent = '✅ Aktif';
+                    btn.style.background = '#2d7a4f';
+                    btn.title = 'Klik untuk nonaktifkan peserta ini';
+                    row.style.opacity = '1';
+                    row.style.background = '';
+                    row.querySelectorAll('input').forEach(inp => inp.disabled = false);
+                } else {
+                    // Exclude
+                    btn.dataset.excluded = '1';
+                    btn.textContent = '⛔ Nonaktif';
+                    btn.style.background = '#b91c1c';
+                    btn.title = 'Klik untuk aktifkan kembali peserta ini';
+                    row.style.opacity = '0.4';
+                    row.style.background = 'rgba(185,28,28,0.06)';
+                    row.querySelectorAll('input').forEach(inp => inp.disabled = true);
+                }
+                renumberPeserta();
             }
         });
 
@@ -1560,6 +1646,9 @@ function showAdminPanel(section) {
             try {
                 for (const cb of document.querySelectorAll('.pilihPesertaPenilaian')) {
                     const id = parseInt(cb.dataset.id);
+                    const row = cb.closest('tr');
+                    const excludeBtn = row ? row.querySelector('.toggleExcludePeserta') : null;
+                    if (excludeBtn && excludeBtn.dataset.excluded === '1') continue; // skip nonaktif
                     if (cb.checked) {
                         const nilai = {
                             tachi1: parseInt(document.querySelector(`.nilai-tachi1[data-id="${id}"]`).value)||0,
@@ -1586,7 +1675,8 @@ function showAdminPanel(section) {
                         await deletePenilaian(id);
                     }
                 }
-                alert('Penilaian disimpan!');
+                await simpanRiwayatUjian();
+                alert('Penilaian disimpan dan diarsipkan ke Riwayat Ujian!');
             } catch (e) { alert('Gagal: ' + e.message); }
             finally { hideLoading(); }
         };
@@ -1625,6 +1715,9 @@ function showAdminPanel(section) {
             ];
             let no = 1;
             document.querySelectorAll('.pilihPesertaPenilaian').forEach(cb => {
+                const row = cb.closest('tr');
+                const excludeBtn = row ? row.querySelector('.toggleExcludePeserta') : null;
+                if (excludeBtn && excludeBtn.dataset.excluded === '1') return; // skip nonaktif
                 if (cb.checked) {
                     const id = parseInt(cb.dataset.id);
                     excelRows.push([
@@ -1768,6 +1861,235 @@ function showAdminPanel(section) {
             const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'KESELURUHAN');
             XLSX.writeFile(wb, `format_usulan_ijazah_kyu_${tglIjazahVal}.xlsx`);
         };
+
+    } else if (section === 'riwayatUjian') {
+        // ─── RIWAYAT UJIAN ───────────────────────────────────
+        const renderRU = () => {
+            let html = `<h3>📜 Riwayat Ujian</h3>`;
+            if (!riwayatUjian.length) {
+                html += `<div style="background:rgba(201,168,76,.08);border:1px solid var(--gold-dim);border-radius:6px;padding:16px;margin-top:12px;line-height:1.7;">
+                    ℹ️ Belum ada riwayat. Riwayat otomatis tersimpan setiap kali menekan <strong>💾 Simpan</strong> di menu <strong>📝 Penilaian Kyu</strong>.</div>`;
+            } else {
+                html += `<p style="font-size:.85rem;opacity:.65;margin:4px 0 14px;">
+                    ${riwayatUjian.length} sesi ujian tersimpan — klik <strong>👁️ Detail</strong> untuk melihat nilai lengkap.</p>
+                <div class="table-wrapper"><table id="tblRU">
+                <thead><tr style="background:#2c3e66;color:#fff;">
+                    <th>No</th><th>Tanggal Ujian</th><th>Cabang</th><th>Lokasi</th>
+                    <th>Peserta</th><th>Diarsipkan</th><th style="min-width:140px;">Aksi</th>
+                </tr></thead><tbody>`;
+                riwayatUjian.forEach((r,i) => {
+                    const tgl = new Date(r.tanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
+                    html += `<tr>
+                        <td style="text-align:center">${i+1}</td>
+                        <td>${tgl}</td><td>${r.cabang||'-'}</td><td>${r.lokasi||'-'}</td>
+                        <td style="text-align:center"><strong>${(r.peserta||[]).length}</strong></td>
+                        <td style="font-size:.78rem">${r.disimpan||'-'}</td>
+                        <td style="white-space:nowrap">
+                            <button class="btnRUDetail" data-idx="${i}"
+                                style="background:#0a6ea0;color:#fff;border:none;border-radius:4px;padding:4px 9px;cursor:pointer;font-size:.75rem;margin-right:3px;">👁️ Detail</button>
+                            <button class="btnRUXls" data-idx="${i}"
+                                style="background:#14402a;color:#a8f0c0;border:none;border-radius:4px;padding:4px 9px;cursor:pointer;font-size:.75rem;margin-right:3px;">📥 XLS</button>
+                            <button class="btnRUHapus" data-id="${r.id}"
+                                style="background:#7f1d1d;color:#fca5a5;border:none;border-radius:4px;padding:4px 9px;cursor:pointer;font-size:.75rem;">🗑️</button>
+                        </td></tr>`;
+                });
+                html += `</tbody></table></div>`;
+            }
+            panel.innerHTML = html;
+
+            // Detail modal
+            panel.querySelectorAll('.btnRUDetail').forEach(btn => {
+                btn.onclick = () => {
+                    const r = riwayatUjian[+btn.dataset.idx];
+                    const tgl = new Date(r.tanggal).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
+                    let d = `<div style="margin-bottom:10px;font-size:.9rem;">
+                        <strong>Tanggal:</strong> ${tgl} &nbsp;|&nbsp;
+                        <strong>Cabang:</strong> ${r.cabang} &nbsp;|&nbsp;
+                        <strong>Lokasi:</strong> ${r.lokasi}<br>
+                        <strong>Diarsipkan:</strong> ${r.disimpan}
+                    </div>
+                    <div class="table-wrapper"><table style="font-size:.82rem;">
+                    <thead><tr style="background:#2c3e66;color:#fff;">
+                        <th>No</th><th>Nama</th><th>KYU</th><th>Unit</th>
+                        <th>Kata</th><th>Bunkai</th><th>Kumite</th><th>Teori</th>
+                        <th>Recom.<br>Rank</th><th>Awarded<br>Rank</th>
+                    </tr></thead><tbody>`;
+                    (r.peserta||[]).forEach((p,i)=>{
+                        const n=p.nilai||{};
+                        d+=`<tr><td style="text-align:center">${i+1}</td>
+                            <td>${p.nama}</td><td style="text-align:center">${p.kyu}</td>
+                            <td>${p.unit}</td>
+                            <td style="text-align:center">${n.kata||'-'}</td>
+                            <td style="text-align:center">${n.bunkai||'-'}</td>
+                            <td style="text-align:center">${n.kumite||'-'}</td>
+                            <td style="text-align:center">${n.teori||'-'}</td>
+                            <td style="text-align:center">${n.rekom||'-'}</td>
+                            <td style="text-align:center">${n.rekomAwarded||'-'}</td>
+                        </tr>`;
+                    });
+                    d += `</tbody></table></div>`;
+                    showPreview(`📜 Detail Ujian — ${tgl}`, d);
+                };
+            });
+
+            // Download XLS
+            panel.querySelectorAll('.btnRUXls').forEach(btn => {
+                btn.onclick = () => {
+                    const r = riwayatUjian[+btn.dataset.idx];
+                    const rows = [
+                        ['','','','KOMISARIAT DAERAH SULAWESI SELATAN','','','','','','','','','','','','','','','','SCORE'],
+                        ['','','','','CABANG',':',r.cabang,'','','','','','','','','','','','','A - A+'],
+                        [],[],
+                        ['Grading Panel Head','','','','','','','','','','','','Membership Number'],
+                        ['2nd Panel Member'],['3rd Panel Member'],['4th Panel Member'],['5th Panel Member'],[],
+                        ['NO','NAMA LENGKAP','KYU','DOJO/UNIT',
+                         'TACHI DACHI','','JUPPO IDO','','KIHON WAZA','','KIHON IDO','',
+                         'SHIHO IDO','','YAKUSOKU KUMITE','','KATA','','','','BUNKAI','KUMITE','TEORI',
+                         'RECOM-MENDED RANK','AWARDED RANK'],
+                        ['','','','','1','2','1','2','1','2','1','2','1','2','1','2','1','2','3','4','5','','','','']
+                    ];
+                    (r.peserta||[]).forEach((p,i)=>{
+                        const n=p.nilai||{};
+                        rows.push([i+1,p.nama,p.kyu,p.unit,
+                            n.tachi1||'',n.tachi2||'',n.juppo1||'',n.juppo2||'',
+                            n.kihon1||'',n.kihon2||'',n.kihonIdo1||'',n.kihonIdo2||'',
+                            n.shihoIdo1||'',n.shihoIdo2||'',n.yakusoku1||'',n.yakusoku2||'',
+                            n.kata||'','','','',n.bunkai||'',n.kumite||'',n.teori||'',
+                            n.rekom||'',n.rekomAwarded||'']);
+                    });
+                    const ws=XLSX.utils.aoa_to_sheet(rows);
+                    ws['!cols']=[{wch:4},{wch:25},{wch:6},{wch:18},{wch:7},{wch:7},{wch:7},{wch:7},{wch:7},{wch:7},{wch:7},{wch:7},{wch:7},{wch:7},{wch:7},{wch:7},{wch:7},{wch:7},{wch:7},{wch:7},{wch:7},{wch:8},{wch:6},{wch:12},{wch:10}];
+                    const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Sheet1');
+                    XLSX.writeFile(wb,`FORMAT_UJIAN_${r.tanggal}.xlsx`);
+                };
+            });
+
+            // Hapus entry
+            panel.querySelectorAll('.btnRUHapus').forEach(btn => {
+                btn.onclick = async () => {
+                    if (!confirm('Hapus arsip ujian ini? Tindakan tidak bisa dibatalkan.')) return;
+                    showLoading('Menghapus...');
+                    try { await hapusEntryRiwayatUjian(+btn.dataset.id); renderRU(); }
+                    catch(e){ alert('Gagal: '+e.message); }
+                    finally { hideLoading(); }
+                };
+            });
+        };
+        renderRU();
+
+    } else if (section === 'riwayatLaporan') {
+        // ─── RIWAYAT LAPORAN LATIHAN ─────────────────────────
+        const renderRL = () => {
+            let html = `<h3>📋 Riwayat Laporan Latihan</h3>`;
+            if (!riwayatLaporan.length) {
+                html += `<div style="background:rgba(201,168,76,.08);border:1px solid var(--gold-dim);border-radius:6px;padding:16px;margin-top:12px;line-height:1.7;">
+                    ℹ️ Belum ada riwayat. Riwayat otomatis tersimpan setiap kali menekan <strong>💾 Simpan</strong> di menu <strong>📄 Laporan Latihan</strong>.</div>`;
+            } else {
+                // Group by tahun untuk kemudahan navigasi
+                const byYear = {};
+                riwayatLaporan.forEach(r => {
+                    const y = r.tanggal ? r.tanggal.slice(0,4) : 'Unknown';
+                    if (!byYear[y]) byYear[y] = [];
+                    byYear[y].push(r);
+                });
+                html += `<p style="font-size:.85rem;opacity:.65;margin:4px 0 14px;">
+                    ${riwayatLaporan.length} laporan latihan tersimpan.</p>`;
+                // Year filter tabs
+                const years = Object.keys(byYear).sort().reverse();
+                html += `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;" id="rlYearTabs">`;
+                html += `<button class="rlTabBtn active-tab" data-year="semua"
+                    style="padding:5px 14px;border-radius:20px;border:1px solid var(--gold-dim);cursor:pointer;font-size:.82rem;background:#2c3e66;color:#fff;">Semua</button>`;
+                years.forEach(y => {
+                    html += `<button class="rlTabBtn" data-year="${y}"
+                        style="padding:5px 14px;border-radius:20px;border:1px solid var(--gold-dim);cursor:pointer;font-size:.82rem;background:transparent;color:var(--text);">${y}</button>`;
+                });
+                html += `</div>`;
+                html += `<div id="rlTableContainer"></div>`;
+            }
+            panel.innerHTML = html;
+            if (!riwayatLaporan.length) return;
+
+            const renderTable = (filter) => {
+                const data = filter === 'semua' ? riwayatLaporan : riwayatLaporan.filter(r => r.tanggal && r.tanggal.startsWith(filter));
+                let t = `<div class="table-wrapper"><table id="tblRL">
+                <thead><tr style="background:#2c3e66;color:#fff;">
+                    <th>No</th><th>Hari, Tanggal Latihan</th><th>KOMDA</th><th>Cabang</th>
+                    <th>Unit</th><th>Pelatih</th><th>Pukul</th><th style="text-align:center">Hadir</th>
+                    <th>Diarsipkan</th><th style="min-width:100px">Aksi</th>
+                </tr></thead><tbody>`;
+                data.forEach((r,i) => {
+                    const tgl = new Date(r.tanggal).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+                    t += `<tr>
+                        <td style="text-align:center">${i+1}</td>
+                        <td style="font-size:.83rem">${tgl}</td>
+                        <td>${r.komda||'-'}</td><td>${r.cabang||'-'}</td><td>${r.unit||'-'}</td>
+                        <td style="font-size:.82rem">${(r.pelatih||[]).join(', ')}</td>
+                        <td>${r.pukul||'-'}</td>
+                        <td style="text-align:center"><strong>${r.jumlahHadir||0}</strong></td>
+                        <td style="font-size:.78rem">${r.disimpan||'-'}</td>
+                        <td style="white-space:nowrap">
+                            <button class="btnRLDoc" data-idx="${riwayatLaporan.indexOf(r)}"
+                                style="background:#14402a;color:#a8f0c0;border:none;border-radius:4px;padding:4px 9px;cursor:pointer;font-size:.75rem;margin-right:3px;">📥 DOC</button>
+                            <button class="btnRLHapus" data-id="${r.id}"
+                                style="background:#7f1d1d;color:#fca5a5;border:none;border-radius:4px;padding:4px 9px;cursor:pointer;font-size:.75rem;">🗑️</button>
+                        </td></tr>`;
+                });
+                t += `</tbody></table></div>`;
+                document.getElementById('rlTableContainer').innerHTML = t;
+
+                // Download DOC
+                document.querySelectorAll('.btnRLDoc').forEach(btn => {
+                    btn.onclick = () => {
+                        const r = riwayatLaporan[+btn.dataset.idx];
+                        const tgl = new Date(r.tanggal).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+                        const doc = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+                        <style>body{font-family:'Times New Roman',serif;margin:40px;line-height:1.7}
+                        h2{text-align:center}table{width:100%;border-collapse:collapse}
+                        td,th{border:1px solid #000;padding:6px 12px}</style></head><body>
+                        <h2>LAPORAN LATIHAN<br>KARATE-DO GOJUKAI INDONESIA</h2><hr><br>
+                        <table>
+                          <tr><td width="35%"><strong>KOMDA</strong></td><td>: ${r.komda}</td></tr>
+                          <tr><td><strong>CABANG</strong></td><td>: ${r.cabang}</td></tr>
+                          <tr><td><strong>UNIT</strong></td><td>: ${r.unit}</td></tr>
+                          <tr><td><strong>PELATIH</strong></td><td>: ${(r.pelatih||[]).join(', ')}</td></tr>
+                          <tr><td><strong>Jumlah Hadir</strong></td><td>: ${r.jumlahHadir||0} karateka</td></tr>
+                          <tr><td><strong>Hari, Tanggal</strong></td><td>: ${tgl}</td></tr>
+                          <tr><td><strong>Pukul</strong></td><td>: ${r.pukul}</td></tr>
+                        </table>
+                        <br><p style="text-align:center;font-size:1.1rem"><strong>ONEGAISHIMASU 🙏</strong></p>
+                        </body></html>`;
+                        const a = document.createElement('a');
+                        a.href = URL.createObjectURL(new Blob([doc],{type:'application/msword'}));
+                        a.download = `Laporan_Latihan_${r.tanggal}.doc`; a.click();
+                    };
+                });
+
+                // Hapus entry
+                document.querySelectorAll('.btnRLHapus').forEach(btn => {
+                    btn.onclick = async () => {
+                        if (!confirm('Hapus arsip laporan ini?')) return;
+                        showLoading('Menghapus...');
+                        try { await hapusEntryRiwayatLaporan(+btn.dataset.id); renderRL(); }
+                        catch(e){ alert('Gagal: '+e.message); }
+                        finally { hideLoading(); }
+                    };
+                });
+            };
+
+            renderTable('semua');
+
+            // Year tab switching
+            panel.querySelectorAll('.rlTabBtn').forEach(btn => {
+                btn.onclick = () => {
+                    panel.querySelectorAll('.rlTabBtn').forEach(b => {
+                        b.style.background = 'transparent'; b.style.color = 'var(--text)';
+                    });
+                    btn.style.background = '#2c3e66'; btn.style.color = '#fff';
+                    renderTable(btn.dataset.year);
+                };
+            });
+        };
+        renderRL();
 
     } else if (section === 'gantiPassword') {
         panel.innerHTML = `<h3>🔒 Ganti Password Admin</h3>
@@ -2120,7 +2442,14 @@ function showAdminLaporanPanel(panel) {
         laporanLatihan.tanggal = document.getElementById('editTanggal').value;
         laporanLatihan.pukul = document.getElementById('editPukul').value;
         showLoading('Menyimpan...');
-        try { await saveLaporan(); alert('Laporan disimpan!'); }
+        try {
+            await saveLaporan();
+            const tglL = laporanLatihan.tanggal;
+            let jmlHadir = 0;
+            if (absensiData[tglL]) for (const u in absensiData[tglL]) jmlHadir += Object.values(absensiData[tglL][u]).filter(v=>v==='Hadir').length;
+            await simpanRiwayatLaporan(jmlHadir);
+            alert('Laporan disimpan dan diarsipkan ke Riwayat Latihan!');
+        }
         catch (e) { alert('Gagal: ' + e.message); }
         finally { hideLoading(); }
     };
