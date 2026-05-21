@@ -3175,6 +3175,14 @@ function downloadDoc(m) {
   .sabuk-badge{display:inline-block;padding:3px 12px;border:1px solid #333;border-radius:3px;font-size:10pt;margin-top:6px;}
 </style>
 </head><body>
+<div id="debugBar" style="position:fixed;bottom:0;left:0;right:0;background:red;color:white;font-size:12px;padding:8px;z-index:99999;max-height:200px;overflow-y:auto;word-break:break-all;"></div>
+<script>
+window.onerror = function(msg, src, line, col, err) {
+    document.getElementById('debugBar').innerHTML += 
+        '<b>ERROR baris ' + line + ':</b> ' + msg + '<br>';
+    return false;
+};
+</script>
 <div class="kop">
   <h2>PENGURUS BESAR</h2>
   <h2>KARATE-DO GOJUKAI INDONESIA</h2>
