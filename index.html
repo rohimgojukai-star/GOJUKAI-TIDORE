@@ -3369,7 +3369,7 @@ function showLupaPasswordModal(mode) {
         // Isi nomor WA admin dari settings
         sb.getSetting('admin_wa').then(wa => {
             const noWa = (wa || '').replace(/[^0-9]/g, '');
-            const pesan = encodeURIComponent('Assalamu'alaikum, saya ingin minta reset password akun Gojukai saya.');
+            const pesan = encodeURIComponent('Assalamualaikum, saya ingin minta reset password akun Gojukai saya.');
             document.getElementById('waAdminLink').href = noWa
                 ? `https://wa.me/${noWa}?text=${pesan}`
                 : `https://wa.me/?text=${pesan}`;
