@@ -277,7 +277,7 @@ body.dark .imgbb-note{color:var(--text-lt)}
     <div class="ht">
       <h1>Karate-Do Gojukai Indonesia</h1>
       <div class="sub">Cabang Kota Tidore Kepulauan</div>
-      <div class="tag">Latih tubuh, baja mental, junjung tinggi persaudaraan</div>
+      <div class="tag">Latih tubuh, bina mental dan karakter, junjung tinggi persaudaraan</div>
     </div>
     <div class="db-badge-row">
       <span id="dbStatusBadge" class="db-status offline">● Offline</span>
@@ -305,11 +305,12 @@ body.dark .imgbb-note{color:var(--text-lt)}
         <img id="landingLogo" style="display:none">
         <div class="grid-2" style="margin-bottom:26px">
           <div class="card" style="border-left:4px solid var(--crimson);padding-left:26px">
-            <h2>📜 Janji Karate-Do Goju</h2>
+            <h2>📜 Janji Karate-Do Gojukai</h2>
             <ul style="list-style:none;padding:0">
-              <li style="padding:8px 0;border-bottom:1px solid var(--gold-dim);font-size:1.05rem">🤝 Belajar Karate-Do hanya untuk tujuan mulia.</li>
-              <li style="padding:8px 0;border-bottom:1px solid var(--gold-dim);font-size:1.05rem">⚡ Dengan semangat dan jiwa ksatria.</li>
-              <li style="padding:8px 0;font-size:1.05rem">🏅 Jaga nama baik perguruan.</li>
+              <li style="padding:8px 0;border-bottom:1px solid var(--gold-dim);font-size:1.05rem"> Kami merasa bersyukur kepada Tuhan Yang Maha Esa karena dapat mempelajari Karate-do Goju, dan berjanji.</li>
+              <li style="padding:8px 0;border-bottom:1px solid var(--gold-dim);font-size:1.05rem">🤝 Mempelajari Karate-Do hanya untuk tujuan-tujuan mulia.</li>
+              <li style="padding:8px 0;border-bottom:1px solid var(--gold-dim);font-size:1.05rem">⚡ Mempelajari Karate-do dengan semangat dan jiwa ksatria.</li>
+              <li style="padding:8px 0;font-size:1.05rem">🏅 Menjunjung tinggi nama baik perguruan dalam Ucapan dan Tindakan.</li>
             </ul>
           </div>
           <div class="card" style="border-left:4px solid var(--gold)">
@@ -1149,8 +1150,27 @@ adminLoginBtn.onclick = () => {
     document.body.appendChild(modal);
     document.getElementById('submitAdminLogin').onclick = async () => {
         const inputPass = document.getElementById('adminPasswordInput').value;
-        const storedPass = await sb.getSetting('admin_password') || 'admin123';
-        if (inputPass === storedPass) {
+        const storedHash = await sb.getSetting('admin_password');
+        // Support migrasi: jika belum di-hash (plaintext lama), bandingkan langsung
+        // setelah login berhasil, simpan ulang sebagai hash
+        let loginOk = false;
+        if (storedHash) {
+            if (storedHash.length === 64) {
+                // Sudah hash SHA-256
+                loginOk = (await sha256(inputPass)) === storedHash;
+            } else {
+                // Masih plaintext lama — bandingkan langsung & migrasi ke hash
+                if (inputPass === storedHash) {
+                    loginOk = true;
+                    await sb.setSetting('admin_password', await sha256(inputPass));
+                }
+            }
+        } else {
+            // Belum ada password tersimpan, pakai default 'admin123'
+            loginOk = inputPass === 'admin123';
+            if (loginOk) await sb.setSetting('admin_password', await sha256('admin123'));
+        }
+        if (loginOk) {
             modal.remove(); hideAllSections(); adminPanel.classList.remove('hidden'); showPublicToolbar(false);
             syncKaratekaFromRegistrations(); buildAdminMenu(); showAdminPanel('pengurus');
         } else alert('Password admin salah!');
@@ -2096,30 +2116,97 @@ function showAdminPanel(section) {
         renderRL();
 
     } else if (section === 'gantiPassword') {
-        panel.innerHTML = `<h3>🔒 Ganti Password Admin</h3>
-            <div style="max-width:400px;margin-top:15px;">
-                <div style="margin-bottom:15px;"><label>Password Lama</label><input type="password" id="oldAdminPass" placeholder="Masukkan password lama"></div>
-                <div style="margin-bottom:15px;"><label>Password Baru</label><input type="password" id="newAdminPass" placeholder="Masukkan password baru"></div>
-                <div style="margin-bottom:20px;"><label>Konfirmasi Password Baru</label><input type="password" id="confirmAdminPass" placeholder="Ulangi password baru"></div>
-                <button id="submitGantiPass" class="btn-success">💾 Simpan Password Baru</button>
-                <div id="gantiPassMsg" style="margin-top:12px;font-size:.9rem;"></div>
+        panel.innerHTML = `<h3>🔒 Keamanan Admin</h3>
+            <div style="max-width:420px;margin-top:15px;display:flex;flex-direction:column;gap:24px;">
+
+                <!-- Ganti Password -->
+                <div style="background:var(--card);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:18px;">
+                    <h4 style="margin:0 0 14px;font-size:.9rem;color:var(--gold-lt);">🔑 Ganti Password Login</h4>
+                    <div style="margin-bottom:12px;"><label>Password Lama</label><input type="password" id="oldAdminPass" placeholder="Masukkan password lama"></div>
+                    <div style="margin-bottom:12px;"><label>Password Baru</label><input type="password" id="newAdminPass" placeholder="Minimal 6 karakter"></div>
+                    <div style="margin-bottom:14px;"><label>Konfirmasi Password Baru</label><input type="password" id="confirmAdminPass" placeholder="Ulangi password baru"></div>
+                    <button id="submitGantiPass" class="btn-success">💾 Simpan Password</button>
+                    <div id="gantiPassMsg" style="margin-top:10px;font-size:.88rem;"></div>
+                </div>
+
+                <!-- Kode Rahasia -->
+                <div style="background:var(--card);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:18px;">
+                    <h4 style="margin:0 0 6px;font-size:.9rem;color:var(--gold-lt);">🛡️ Kode Rahasia (untuk Lupa Password)</h4>
+                    <p style="font-size:.8rem;opacity:.65;margin-bottom:12px;">Kode ini digunakan jika Anda lupa password admin. Simpan di tempat yang aman.</p>
+                    <div style="margin-bottom:12px;"><label>Kode Rahasia Baru</label><input type="password" id="newSecretKey" placeholder="Buat kode rahasia" autocomplete="new-password"></div>
+                    <div style="margin-bottom:14px;"><label>Konfirmasi Kode Rahasia</label><input type="password" id="confirmSecretKey" placeholder="Ulangi kode rahasia" autocomplete="new-password"></div>
+                    <button id="simpanSecretKeyBtn" class="btn">🔒 Simpan Kode Rahasia</button>
+                    <div id="secretKeyMsg" style="margin-top:10px;font-size:.88rem;"></div>
+                </div>
+
+                <!-- Nomor WA Admin -->
+                <div style="background:var(--card);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:18px;">
+                    <h4 style="margin:0 0 6px;font-size:.9rem;color:var(--gold-lt);">📱 Nomor WhatsApp Admin</h4>
+                    <p style="font-size:.8rem;opacity:.65;margin-bottom:12px;">Ditampilkan ke member saat mereka lupa password, untuk menghubungi admin.</p>
+                    <div style="margin-bottom:14px;"><label>Nomor WA (format: 628xxx)</label><input type="tel" id="adminWaInput" placeholder="Contoh: 6281234567890"></div>
+                    <button id="simpanWaAdminBtn" class="btn">💾 Simpan Nomor WA</button>
+                    <div id="waAdminMsg" style="margin-top:10px;font-size:.88rem;"></div>
+                </div>
             </div>`;
+
+        // Load nomor WA yang sudah tersimpan
+        sb.getSetting('admin_wa').then(wa => {
+            if (wa) document.getElementById('adminWaInput').value = wa;
+        }).catch(() => {});
+
+        // Ganti Password
         document.getElementById('submitGantiPass').onclick = async () => {
             const oldPass = document.getElementById('oldAdminPass').value;
             const newPass = document.getElementById('newAdminPass').value;
             const confirmPass = document.getElementById('confirmAdminPass').value;
             const msg = document.getElementById('gantiPassMsg');
-            const stored = await sb.getSetting('admin_password') || 'admin123';
-            if (oldPass !== stored) { msg.innerHTML = '<span style="color:#c0392b;">❌ Password lama salah!</span>'; return; }
+            const storedHash2 = await sb.getSetting('admin_password');
+            let oldOk = false;
+            if (storedHash2 && storedHash2.length === 64) {
+                oldOk = (await sha256(oldPass)) === storedHash2;
+            } else {
+                oldOk = oldPass === (storedHash2 || 'admin123');
+            }
+            if (!oldOk) { msg.innerHTML = '<span style="color:#c0392b;">❌ Password lama salah!</span>'; return; }
             if (newPass.length < 6) { msg.innerHTML = '<span style="color:#c0392b;">❌ Password baru minimal 6 karakter.</span>'; return; }
-            if (newPass !== confirmPass) { msg.innerHTML = '<span style="color:#c0392b;">❌ Konfirmasi password tidak cocok!</span>'; return; }
+            if (newPass !== confirmPass) { msg.innerHTML = '<span style="color:#c0392b;">❌ Konfirmasi tidak cocok!</span>'; return; }
             showLoading('Menyimpan password...');
             try {
-                await sb.setSetting('admin_password', newPass);
+                await sb.setSetting('admin_password', await sha256(newPass));
                 msg.innerHTML = '<span style="color:#2d7a4f;">✅ Password berhasil diubah!</span>';
                 document.getElementById('oldAdminPass').value = '';
                 document.getElementById('newAdminPass').value = '';
                 document.getElementById('confirmAdminPass').value = '';
+            } catch(e) { msg.innerHTML = '<span style="color:#c0392b;">❌ Gagal: ' + e.message + '</span>'; }
+            finally { hideLoading(); }
+        };
+
+        // Simpan Kode Rahasia
+        document.getElementById('simpanSecretKeyBtn').onclick = async () => {
+            const key = document.getElementById('newSecretKey').value.trim();
+            const confirm = document.getElementById('confirmSecretKey').value.trim();
+            const msg = document.getElementById('secretKeyMsg');
+            if (key.length < 4) { msg.innerHTML = '<span style="color:#c0392b;">❌ Kode rahasia minimal 4 karakter.</span>'; return; }
+            if (key !== confirm) { msg.innerHTML = '<span style="color:#c0392b;">❌ Kode tidak cocok!</span>'; return; }
+            showLoading('Menyimpan kode rahasia...');
+            try {
+                await sb.setSetting('admin_secret_key', await sha256(key));
+                msg.innerHTML = '<span style="color:#2d7a4f;">✅ Kode rahasia berhasil disimpan!</span>';
+                document.getElementById('newSecretKey').value = '';
+                document.getElementById('confirmSecretKey').value = '';
+            } catch(e) { msg.innerHTML = '<span style="color:#c0392b;">❌ Gagal: ' + e.message + '</span>'; }
+            finally { hideLoading(); }
+        };
+
+        // Simpan Nomor WA Admin
+        document.getElementById('simpanWaAdminBtn').onclick = async () => {
+            const wa = document.getElementById('adminWaInput').value.trim().replace(/[^0-9]/g, '');
+            const msg = document.getElementById('waAdminMsg');
+            if (!wa) { msg.innerHTML = '<span style="color:#c0392b;">❌ Isi nomor WhatsApp!</span>'; return; }
+            showLoading('Menyimpan nomor WA...');
+            try {
+                await sb.setSetting('admin_wa', wa);
+                msg.innerHTML = '<span style="color:#2d7a4f;">✅ Nomor WA berhasil disimpan!</span>';
             } catch(e) { msg.innerHTML = '<span style="color:#c0392b;">❌ Gagal: ' + e.message + '</span>'; }
             finally { hideLoading(); }
         };
@@ -2153,6 +2240,7 @@ function showAdminPanel(section) {
                 <td style="white-space:nowrap">
                     <button class="previewPendaftar" data-id="${reg.id}" style="background:#0891b2;font-size:.68rem;padding:4px 8px;">👁️</button>
                     <button class="dlPendaftar" data-id="${reg.id}" style="background:#2d6a4f;font-size:.68rem;padding:4px 8px;">📄</button>
+                    <button class="resetPassMember" data-id="${reg.id}" title="Reset Password" style="background:#7c3aed;font-size:.68rem;padding:4px 8px;">🔑</button>
                     ${approveBtn}${tolakBtn}
                     <button class="hapusPendaftar" data-id="${reg.id}" style="background:#b91c1c;font-size:.68rem;padding:4px 8px;">🗑️</button>
                 </td>
@@ -2186,6 +2274,25 @@ function showAdminPanel(section) {
         });
 
         document.querySelectorAll('.dlPendaftar').forEach(btn => { btn.onclick = () => { const m = registrations.find(r => r.id == btn.dataset.id); if (m) downloadDoc(m); }; });
+
+        // Reset password member
+        document.querySelectorAll('.resetPassMember').forEach(btn => {
+            btn.onclick = async () => {
+                const m = registrations.find(r => r.id == btn.dataset.id);
+                if (!m) return;
+                const defaultPass = 'gojukai123';
+                if (!confirm(`Reset password ${m.nama} ke "${defaultPass}"?\n\nMember harus login dengan password ini lalu segera ganti.`)) return;
+                showLoading('Mereset password...');
+                try {
+                    const idx = registrations.findIndex(r => r.id == btn.dataset.id);
+                    registrations[idx].password = defaultPass;
+                    await sb.update('gojukai_pendaftar', m.id, { password: defaultPass });
+                    alert(`✅ Password ${m.nama} berhasil direset ke "${defaultPass}"`);
+                } catch(e) {
+                    alert('❌ Gagal reset: ' + e.message);
+                } finally { hideLoading(); }
+            };
+        });
 
         // Approve pendaftar
         document.querySelectorAll('.approvePendaftar').forEach(btn => {
@@ -3152,86 +3259,121 @@ function showLupaPasswordModal(mode) {
     const isAdmin = mode === 'admin';
     const modal = document.createElement('div');
     modal.className = 'modal';
+
     if (isAdmin) {
+        // ── ADMIN: Reset via Kode Rahasia ──────────────────────────────
         modal.innerHTML = `
         <div class="modal-content">
-            <h3>🔓 Reset Password Admin</h3>
-            <p style="font-size:.9rem;margin:10px 0 16px;opacity:.7">Masukkan kode OTP admin untuk melihat & mengubah password.</p>
-            <div style="margin-bottom:12px"><label>Kode OTP Admin</label><input type="text" id="otpAdminInput" placeholder="Masukkan kode OTP"></div>
-            <div id="adminPassReveal" style="display:none">
-                <div style="margin-bottom:12px"><label>Password Admin Saat Ini</label><input type="text" id="currentAdminPass" readonly style="background:rgba(201,168,76,.08);color:var(--gold);"></div>
-                <div style="margin-bottom:12px"><label>Password Admin Baru</label><input type="password" id="newAdminPass" placeholder="Password baru"></div>
-                <button id="gantiAdminPassBtn" class="btn-success" style="margin-bottom:8px">💾 Simpan Password Baru</button>
+            <h3>🔑 Reset Password Admin</h3>
+            <p style="font-size:.85rem;margin:8px 0 16px;opacity:.7">Masukkan kode rahasia yang sudah Anda tetapkan sebelumnya.</p>
+            <div style="margin-bottom:12px">
+                <label>Kode Rahasia</label>
+                <input type="password" id="secretKeyInput" placeholder="Masukkan kode rahasia" autocomplete="off">
             </div>
-            <div id="otpAdminMsg" style="color:var(--crimson);font-size:.88rem;margin-bottom:10px"></div>
+            <div id="secretKeyReveal" style="display:none">
+                <div style="margin-bottom:12px">
+                    <label>Password Admin Baru</label>
+                    <input type="password" id="newAdminPassReset" placeholder="Minimal 6 karakter" autocomplete="new-password">
+                </div>
+                <div style="margin-bottom:12px">
+                    <label>Konfirmasi Password Baru</label>
+                    <input type="password" id="confirmAdminPassReset" placeholder="Ulangi password baru" autocomplete="new-password">
+                </div>
+                <button id="simpanPassResetBtn" class="btn-success" style="width:100%;margin-bottom:8px">💾 Simpan Password Baru</button>
+            </div>
+            <div id="secretKeyMsg" style="font-size:.88rem;margin-bottom:12px;min-height:18px"></div>
             <div style="display:flex;gap:10px">
-                <button id="cekOtpAdminBtn" class="btn">🔍 Verifikasi OTP</button>
-                <button id="batalLupaAdminBtn" class="btn-outline">Batal</button>
+                <button id="verifikasiSecretBtn" class="btn" style="display:${''}>🔍 Verifikasi</button>
+                <button id="batalResetAdminBtn" class="btn-outline">Batal</button>
             </div>
+            <p style="font-size:.75rem;opacity:.5;margin-top:14px;text-align:center">Belum punya kode rahasia? Set di Panel Admin → Pengaturan → Keamanan</p>
         </div>`;
         document.body.appendChild(modal);
-        document.getElementById('batalLupaAdminBtn').onclick = () => modal.remove();
-        document.getElementById('cekOtpAdminBtn').onclick = async () => {
-            const otp = document.getElementById('otpAdminInput').value.trim();
-            // OTP admin = kode pelatih (shared secret) + "ADMIN" suffix
-            const expectedOtp = (kodePelatih + 'ADMIN').toUpperCase();
-            if (otp.toUpperCase() === expectedOtp) {
-                document.getElementById('adminPassReveal').style.display = 'block';
-                document.getElementById('currentAdminPass').value = 'admin123';
-                document.getElementById('otpAdminMsg').style.color = '#2d7a4f';
-                document.getElementById('otpAdminMsg').textContent = '✅ OTP benar! Password ditampilkan.';
+
+        const msg = document.getElementById('secretKeyMsg');
+        document.getElementById('batalResetAdminBtn').onclick = () => modal.remove();
+
+        document.getElementById('verifikasiSecretBtn').onclick = async () => {
+            const input = document.getElementById('secretKeyInput').value.trim();
+            if (!input) { msg.style.color = 'var(--crimson)'; msg.textContent = '⚠️ Masukkan kode rahasia!'; return; }
+            const storedSecretHash = await sb.getSetting('admin_secret_key');
+            if (!storedSecretHash) {
+                msg.style.color = 'var(--crimson)';
+                msg.textContent = '❌ Kode rahasia belum diatur. Masuk lewat password lama lalu set di Pengaturan → Keamanan.';
+                return;
+            }
+            const inputHash = await sha256(input);
+            if (inputHash === storedSecretHash) {
+                document.getElementById('secretKeyReveal').style.display = 'block';
+                document.getElementById('verifikasiSecretBtn').style.display = 'none';
+                document.getElementById('secretKeyInput').disabled = true;
+                msg.style.color = '#2d7a4f';
+                msg.textContent = '✅ Kode benar! Silakan isi password baru.';
             } else {
-                document.getElementById('otpAdminMsg').style.color = 'var(--crimson)';
-                document.getElementById('otpAdminMsg').textContent = '❌ OTP salah. Hubungi pengurus cabang.';
+                msg.style.color = 'var(--crimson)';
+                msg.textContent = '❌ Kode rahasia salah.';
             }
         };
-        document.getElementById('gantiAdminPassBtn').onclick = () => {
-            const newPass = document.getElementById('newAdminPass').value.trim();
-            if (!newPass) { alert('Isi password baru!'); return; }
-            document.getElementById('otpAdminMsg').style.color = '#2d7a4f';
-            document.getElementById('otpAdminMsg').textContent = '⚠️ Password admin tertanam di kode. Hubungi pengembang untuk mengubah secara permanen.';
+
+        document.getElementById('simpanPassResetBtn').onclick = async () => {
+            const newPass = document.getElementById('newAdminPassReset').value.trim();
+            const confirmPass = document.getElementById('confirmAdminPassReset').value.trim();
+            if (newPass.length < 6) { msg.style.color = 'var(--crimson)'; msg.textContent = '❌ Password minimal 6 karakter.'; return; }
+            if (newPass !== confirmPass) { msg.style.color = 'var(--crimson)'; msg.textContent = '❌ Konfirmasi password tidak cocok.'; return; }
+            showLoading('Menyimpan password baru...');
+            try {
+                await sb.setSetting('admin_password', await sha256(newPass));
+                msg.style.color = '#2d7a4f';
+                msg.textContent = '✅ Password berhasil diubah! Silakan login kembali.';
+                document.getElementById('simpanPassResetBtn').disabled = true;
+                setTimeout(() => modal.remove(), 2000);
+            } catch(e) {
+                msg.style.color = 'var(--crimson)';
+                msg.textContent = '❌ Gagal menyimpan: ' + e.message;
+            } finally { hideLoading(); }
         };
+
     } else {
+        // ── MEMBER: Minta reset ke admin ───────────────────────────────
         modal.innerHTML = `
         <div class="modal-content">
-            <h3>🔓 Lupa Password Peserta</h3>
-            <p style="font-size:.9rem;margin:10px 0 16px;opacity:.7">Masukkan username & nama lengkap yang terdaftar untuk melihat password Anda.</p>
-            <div style="margin-bottom:12px"><label>Username</label><input type="text" id="lupaUsernameInput" placeholder="Username Anda"></div>
-            <div style="margin-bottom:12px"><label>Nama Lengkap</label><input type="text" id="lupaNamaInput" placeholder="Nama lengkap sesuai pendaftaran"></div>
-            <div id="lupaPassResult" style="display:none;margin-bottom:12px">
-                <div style="background:rgba(45,122,79,.1);border:1px solid #2d7a4f;border-radius:6px;padding:14px">
-                    <p style="margin-bottom:6px;font-weight:bold;color:#2d7a4f;">✅ Data ditemukan!</p>
-                    <p style="margin-bottom:4px;"><strong>Username:</strong> <span id="lupaRevealUser"></span></p>
-                    <p><strong>Password:</strong> <span id="lupaRevealPass" style="font-family:monospace;font-size:1.05rem;color:var(--crimson);"></span></p>
-                </div>
+            <h3>🔓 Lupa Password</h3>
+            <p style="font-size:.88rem;margin:8px 0 16px;opacity:.8">Untuk keamanan akun Anda, password hanya bisa direset oleh admin.</p>
+            <div style="background:rgba(201,168,76,.08);border:1px solid var(--gold);border-radius:8px;padding:16px;margin-bottom:16px">
+                <p style="font-size:.88rem;margin-bottom:10px;font-weight:bold;color:var(--gold-lt);">📋 Langkah reset password:</p>
+                <ol style="font-size:.85rem;padding-left:18px;line-height:1.8;opacity:.85">
+                    <li>Hubungi admin / pelatih unit Anda</li>
+                    <li>Beritahu <strong>username</strong> dan <strong>nama lengkap</strong> Anda</li>
+                    <li>Admin akan reset password ke default</li>
+                    <li>Login dengan password baru, lalu segera ganti di Profil</li>
+                </ol>
             </div>
-            <div id="lupaPassMsg" style="color:var(--crimson);font-size:.88rem;margin-bottom:10px"></div>
-            <div style="display:flex;gap:10px">
-                <button id="cariPasswordBtn" class="btn">🔍 Cari Password</button>
-                <button id="batalLupaBtn" class="btn-outline">Batal</button>
+            <div style="background:rgba(45,122,79,.08);border:1px solid #2d7a4f;border-radius:8px;padding:14px;margin-bottom:16px;text-align:center">
+                <p style="font-size:.82rem;opacity:.7;margin-bottom:8px">Hubungi admin via WhatsApp:</p>
+                <a id="waAdminLink" href="#" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#25d366;color:#fff;padding:10px 20px;border-radius:6px;font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:.05em;text-decoration:none;font-weight:bold;">
+                    📱 Chat WhatsApp Admin
+                </a>
             </div>
+            <button id="batalLupaBtn" class="btn-outline" style="width:100%">Tutup</button>
         </div>`;
         document.body.appendChild(modal);
         document.getElementById('batalLupaBtn').onclick = () => modal.remove();
-        document.getElementById('cariPasswordBtn').onclick = () => {
-            const uname = document.getElementById('lupaUsernameInput').value.trim().toLowerCase();
-            const nama = document.getElementById('lupaNamaInput').value.trim().toLowerCase();
-            if (!uname || !nama) { document.getElementById('lupaPassMsg').textContent = '⚠️ Isi username dan nama!'; return; }
-            const member = registrations.find(r =>
-                r.username.toLowerCase() === uname &&
-                r.nama.toLowerCase().includes(nama)
-            );
-            if (member) {
-                document.getElementById('lupaRevealUser').textContent = member.username;
-                document.getElementById('lupaRevealPass').textContent = member.password;
-                document.getElementById('lupaPassResult').style.display = 'block';
-                document.getElementById('lupaPassMsg').textContent = '';
-            } else {
-                document.getElementById('lupaPassResult').style.display = 'none';
-                document.getElementById('lupaPassMsg').textContent = '❌ Data tidak ditemukan. Periksa username & nama Anda.';
-            }
-        };
+
+        // Isi nomor WA admin dari settings
+        sb.getSetting('admin_wa').then(wa => {
+            const noWa = (wa || '').replace(/[^0-9]/g, '');
+            const pesan = encodeURIComponent('Assalamu'alaikum, saya ingin minta reset password akun Gojukai saya.');
+            document.getElementById('waAdminLink').href = noWa
+                ? `https://wa.me/${noWa}?text=${pesan}`
+                : `https://wa.me/?text=${pesan}`;
+        }).catch(() => {});
     }
+}
+
+// ==================== SHA-256 HASH ====================
+async function sha256(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
 // ==================== INIT ====================
