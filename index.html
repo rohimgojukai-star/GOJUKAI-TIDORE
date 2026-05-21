@@ -261,14 +261,6 @@ body.dark .imgbb-note{color:var(--text-lt)}
 </style>
 </head>
 <body>
-<div id="debugBar" style="position:fixed;bottom:0;left:0;right:0;background:red;color:white;font-size:12px;padding:8px;z-index:99999;max-height:200px;overflow-y:auto;word-break:break-all;"></div>
-<script>
-window.onerror = function(msg, src, line, col, err) {
-    document.getElementById('debugBar').innerHTML += 
-        '<b>ERROR baris ' + line + ':</b> ' + msg + '<br>';
-    return false;
-};
-</script>
 
 
 <!-- ── INVISIBLE OLD BANNER (keep IDs for JS compatibility) ── -->
